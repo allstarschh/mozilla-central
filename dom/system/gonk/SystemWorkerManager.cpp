@@ -129,10 +129,13 @@ PostToRIL(JSContext *cx, unsigned argc, jsval *vp)
     return false;
   }
 
+  // TODO
+  int index = 0;
   rm->mSize = size + INDEX_SIZE;
-  memcpy(rm->mData, 0/*TODO*/, INDEX_SIZE);
-  LOGD("mData[0]=%d, mData[1]=%d, mData[2]=%d, mData[3]=%d",rm->mData[0],
-  rm->mData[1], rm->mData[2],rm->mData[3]);
+  rm->mData[0] = (index >> 24) & 0xff;
+  rm->mData[1] = (index >> 16) & 0xff;
+  rm->mData[2] = (index >> 8) & 0xff;
+  rm->mData[3] = index & 0xff;
   memcpy(&rm->mData[INDEX_SIZE], data, size);
 
   RilRawData *tosend = rm.forget();
@@ -190,15 +193,15 @@ RILReceiver::DispatchRILEvent::RunTask(JSContext *aCx)
   unsigned int index, dataSize;
 
   // TODO while
-  // TODO index
-  index = 0;
-//  memcpy(&index, &mMessage->mData, sizeof(index));
+  index = mMessage->mData[0] << 24 |
+          mMessage->mData[1] << 16 |
+          mMessage->mData[2] << 8  |
+          mMessage->mData[3];
   dataSize = mMessage->mData[4] << 24 |
              mMessage->mData[5] << 16 |
-             mMessage->mData[6] << 8 |
+             mMessage->mData[6] << 8  |
              mMessage->mData[7];
-//  memcpy(&dataSize, &mMessage->mData[INDEX_SIZE], sizeof(index));
-  LOGD("XXX index=%u, dataSize=%u", index, dataSize);
+  LOGD("XXX index=%d, dataSize=%d", index, dataSize);
 
   JSObject *array = JS_NewUint8Array(aCx, dataSize);
   if (!array) {
