@@ -39,6 +39,14 @@
 #include "WifiWorker.h"
 #include "mozilla/StaticPtr.h"
 
+#undef LOG
+#if defined(MOZ_WIDGET_GONK)
+#include <android/log.h>
+#define LOGD(args...)  __android_log_print(ANDROID_LOG_INFO, "Gonk", args)
+#else
+#define LOG(args...)  printf(args);
+#endif
+
 USING_WORKERS_NAMESPACE
 
 using namespace mozilla::dom::gonk;
@@ -50,6 +58,10 @@ using namespace mozilla::system;
 #define NS_NETWORKMANAGER_CID \
   { 0x33901e46, 0x33b8, 0x11e1, \
   { 0x98, 0x69, 0xf4, 0x6d, 0x04, 0xd2, 0x5b, 0xcc } }
+
+const int INDEX_SIZE = 4;
+const int DATA_SIZE = 4;
+const int HEADER_SIZE = INDEX_SIZE + DATA_SIZE;
 
 namespace {
 
@@ -117,8 +129,11 @@ PostToRIL(JSContext *cx, unsigned argc, jsval *vp)
     return false;
   }
 
-  rm->mSize = size;
-  memcpy(rm->mData, data, size);
+  rm->mSize = size + INDEX_SIZE;
+  memcpy(rm->mData, 0/*TODO*/, INDEX_SIZE);
+  LOGD("mData[0]=%d, mData[1]=%d, mData[2]=%d, mData[3]=%d",rm->mData[0],
+  rm->mData[1], rm->mData[2],rm->mData[3]);
+  memcpy(&rm->mData[INDEX_SIZE], data, size);
 
   RilRawData *tosend = rm.forget();
   JS_ALWAYS_TRUE(SendRilRawData(&tosend));
@@ -171,13 +186,28 @@ bool
 RILReceiver::DispatchRILEvent::RunTask(JSContext *aCx)
 {
   JSObject *obj = JS_GetGlobalObject(aCx);
+  int offset = 0;
+  unsigned int index, dataSize;
 
-  JSObject *array = JS_NewUint8Array(aCx, mMessage->mSize);
+  // TODO while
+  // TODO index
+  index = 0;
+//  memcpy(&index, &mMessage->mData, sizeof(index));
+  dataSize = mMessage->mData[4] << 24 |
+             mMessage->mData[5] << 16 |
+             mMessage->mData[6] << 8 |
+             mMessage->mData[7];
+//  memcpy(&dataSize, &mMessage->mData[INDEX_SIZE], sizeof(index));
+  LOGD("XXX index=%u, dataSize=%u", index, dataSize);
+
+  JSObject *array = JS_NewUint8Array(aCx, dataSize);
   if (!array) {
     return false;
   }
 
-  memcpy(JS_GetArrayBufferViewData(array, aCx), mMessage->mData, mMessage->mSize);
+  memcpy(JS_GetArrayBufferViewData(array, aCx),
+         &mMessage->mData[offset + HEADER_SIZE],
+         dataSize);
   jsval argv[] = { OBJECT_TO_JSVAL(array) };
   return JS_CallFunctionName(aCx, obj, "onRILMessage", NS_ARRAY_LENGTH(argv),
                              argv, argv);

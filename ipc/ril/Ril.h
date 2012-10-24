@@ -25,6 +25,7 @@ namespace ipc {
  */
 struct RilRawData
 {
+    // TODO allstars
     static const size_t MAX_DATA_SIZE = 1024;
     uint8_t mData[MAX_DATA_SIZE];
 
