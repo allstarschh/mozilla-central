@@ -129,7 +129,7 @@ PostToRIL(JSContext *cx, unsigned argc, jsval *vp)
     return false;
   }
 
-  // TODO
+  // TODO Determine index
   int index = 0;
   rm->mSize = size + INDEX_SIZE;
   rm->mData[0] = (index >> 24) & 0xff;
@@ -189,31 +189,37 @@ bool
 RILReceiver::DispatchRILEvent::RunTask(JSContext *aCx)
 {
   JSObject *obj = JS_GetGlobalObject(aCx);
-  int offset = 0;
-  unsigned int index, dataSize;
+  int offset = 0,totalSize = mMessage->mSize;
 
-  // TODO while
-  index = mMessage->mData[0] << 24 |
-          mMessage->mData[1] << 16 |
-          mMessage->mData[2] << 8  |
-          mMessage->mData[3];
-  dataSize = mMessage->mData[4] << 24 |
-             mMessage->mData[5] << 16 |
-             mMessage->mData[6] << 8  |
-             mMessage->mData[7];
-  LOGD("XXX index=%d, dataSize=%d", index, dataSize);
+  while (offset < totalSize) {
+    unsigned int index, dataSize;
+    index = mMessage->mData[offset + 0] << 24 |
+            mMessage->mData[offset + 1] << 16 |
+            mMessage->mData[offset + 2] << 8  |
+            mMessage->mData[offset + 3];
+    dataSize = mMessage->mData[offset + 4] << 24 |
+               mMessage->mData[offset + 5] << 16 |
+               mMessage->mData[offset + 6] << 8  |
+               mMessage->mData[offset + 7];
+    LOGD("XXX index=%d, dataSize=%d", index, dataSize);
 
-  JSObject *array = JS_NewUint8Array(aCx, dataSize);
-  if (!array) {
-    return false;
-  }
+    JSObject *array = JS_NewUint8Array(aCx, dataSize);
+    if (!array) {
+      return false;
+    }
 
-  memcpy(JS_GetArrayBufferViewData(array, aCx),
-         &mMessage->mData[offset + HEADER_SIZE],
-         dataSize);
-  jsval argv[] = { OBJECT_TO_JSVAL(array) };
-  return JS_CallFunctionName(aCx, obj, "onRILMessage", NS_ARRAY_LENGTH(argv),
-                             argv, argv);
+    memcpy(JS_GetArrayBufferViewData(array, aCx),
+           &mMessage->mData[offset + HEADER_SIZE],
+           dataSize);
+    jsval argv[] = { OBJECT_TO_JSVAL(array) };
+    //TODO Dispatch to ril_worker by index
+    if(!JS_CallFunctionName(aCx, obj, "onRILMessage", NS_ARRAY_LENGTH(argv),
+       argv, argv)) {
+      return false;
+    };
+    offset += HEADER_SIZE + dataSize;
+  };
+  return true;
 }
 
 #ifdef MOZ_WIDGET_GONK
