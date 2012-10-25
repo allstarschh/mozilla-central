@@ -35,7 +35,9 @@
 #include "nsContentUtils.h"
 #include "nsServiceManagerUtils.h"
 #include "nsThreadUtils.h"
+//TODO ifdef
 #include "nsRadioInterfaceLayer.h"
+#include "nsMSimRadioInterfaceLayer.h"
 #include "WifiWorker.h"
 #include "mozilla/StaticPtr.h"
 
@@ -421,6 +423,7 @@ SystemWorkerManager::Shutdown()
   StopRil();
 
   mRIL = nullptr;
+  mMSimRIL = nullptr;
 
 #ifdef MOZ_WIDGET_GONK
   StopNetd();
@@ -479,6 +482,8 @@ SystemWorkerManager::GetInterface(const nsIID &aIID, void **aResult)
     return NS_OK;
   }
 
+  //TODO nsIMSimRadioInterfaceLayer
+
   if (aIID.Equals(NS_GET_IID(nsIWifi))) {
     return CallQueryInterface(mWifiWorker,
                               reinterpret_cast<nsIWifi**>(aResult));
@@ -501,7 +506,10 @@ SystemWorkerManager::InitRIL(JSContext *cx)
   // We're keeping as much of this implementation as possible in JS, so the real
   // worker lives in RadioInterfaceLayer.js. All we do here is hold it alive and
   // hook it up to the RIL thread.
-  nsCOMPtr<nsIRadioInterfaceLayer> ril = do_CreateInstance("@mozilla.org/ril;1");
+  // TODO ifdef
+  //nsCOMPtr<nsIRadioInterfaceLayer> ril = do_CreateInstance("@mozilla.org/ril;1");
+  nsCOMPtr<nsIMSimRadioInterfaceLayer> ril =
+    do_CreateInstance("@mozilla.org/msim_ril;1");
   NS_ENSURE_TRUE(ril, NS_ERROR_FAILURE);
 
   nsCOMPtr<nsIWorkerHolder> worker = do_QueryInterface(ril);
@@ -531,7 +539,9 @@ SystemWorkerManager::InitRIL(JSContext *cx)
     StartRil(receiver);
   }
 
-  mRIL = ril;
+  //TODO
+//  mRIL = ril;
+  mMSimRIL = ril;
   return NS_OK;
 }
 

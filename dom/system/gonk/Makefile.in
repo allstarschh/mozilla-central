@@ -42,6 +42,7 @@ XPIDLSRCS = \
   nsIVolumeService.idl \
   nsIVolumeStat.idl \
   nsIWorkerHolder.idl \
+  nsIMSimRadioInterfaceLayer.idl \
   $(NULL)
 
 LOCAL_INCLUDES = \
@@ -83,6 +84,8 @@ EXTRA_COMPONENTS = \
   RadioInterfaceLayer.manifest \
   RadioInterfaceLayer.js \
   RILContentHelper.js \
+  MSimRadioInterfaceLayer.manifest \
+  MSimRadioInterfaceLayer.js \
   $(NULL)
 
 EXTRA_JS_MODULES = \
@@ -90,6 +93,7 @@ EXTRA_JS_MODULES = \
   ril_consts.js \
   ril_worker.js \
   systemlibs.js \
+  msim_ril_worker.js \
   $(NULL)
 
 ifdef ENABLE_TESTS

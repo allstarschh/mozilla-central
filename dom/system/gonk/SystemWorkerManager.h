@@ -20,6 +20,7 @@
 
 #include "nsIInterfaceRequestor.h"
 #include "nsIRadioInterfaceLayer.h"
+#include "nsIMSimRadioInterfaceLayer.h"
 #include "nsIObserver.h"
 #include "nsAutoPtr.h"
 #include "nsCOMPtr.h"
@@ -62,6 +63,7 @@ private:
   nsresult InitWifi(JSContext *cx);
 
   nsCOMPtr<nsIRadioInterfaceLayer> mRIL;
+  nsCOMPtr<nsIMSimRadioInterfaceLayer> mMSimRIL;
 #ifdef MOZ_WIDGET_GONK
   nsCOMPtr<nsIWorkerHolder> mNetdWorker;
 #endif

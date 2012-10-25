@@ -1,0 +1,14 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+#include "nsISupports.idl"
+#include "nsIRadioInterfaceLayer.idl"
+
+interface nsIRadioInterfaceLayer;
+
+[scriptable, uuid(76f084ab-30ef-489a-bc64-af7c83007bc1)]
+interface nsIMSimRadioInterfaceLayer : nsISupports
+{
+  readonly attribute jsval mRIL; // nsIRadioterfaceLayer[]
+};
