@@ -34,8 +34,8 @@ public:
   // Set the token to use (default is internal)
   nsresult SetToken(nsIPK11Token *token);
 
-  // PKCS#12 Import
-  nsresult ImportFromFile(nsIFile *file);
+  // PKCS#12 Import with all required information
+  nsresult ImportFromFile(nsIFile *file, const PRUnichar *password = nullptr);
 
   // PKCS#12 Export
 #if 0
@@ -68,11 +68,12 @@ private:
   //   zero length SECItem.
   //   We try both variations, zero length item and empty string,
   //   without giving a user prompt when trying the different empty password flavors.
-  
+
   enum RetryReason { rr_do_not_retry, rr_bad_password, rr_auto_retry_empty_password_flavors };
   enum ImportMode { im_standard_prompt, im_try_zero_length_secitem };
-  
-  nsresult ImportFromFileHelper(nsIFile *file, ImportMode aImportMode, RetryReason &aWantRetry);
+
+  nsresult ImportFromFileHelper(nsIFile *file, ImportMode aImportMode, RetryReason &aWantRetry,
+                                const PRUnichar *password);
 
   // NSPR file I/O for export file
   PRFileDesc *mTmpFile;
