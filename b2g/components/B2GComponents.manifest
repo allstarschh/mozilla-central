@@ -69,3 +69,20 @@ contract @mozilla.org/network/protocol/about;1?what=certerror {920400b1-cf8f-476
 # FilePicker.js
 component {436ff8f9-0acc-4b11-8ec7-e293efba3141} FilePicker.js
 contract @mozilla.org/filepicker;1 {436ff8f9-0acc-4b11-8ec7-e293efba3141}
+
+# NSSDialogService.js
+component {cbc08081-49b6-4561-9c18-a7707a50bda1} NSSDialogService.js
+contract @mozilla.org/nsCertificateDialogs;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
+contract @mozilla.org/nsClientAuthDialogs;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
+contract @mozilla.org/nsTokenPasswordDialogs;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
+# contract @mozilla.org/nsCertPickDialogs;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
+contract @mozilla.org/nsTokenDialogs;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
+# contract @mozilla.org/nsDOMCryptoDialogs;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
+# contract @mozilla.org/nsGeneratingKeypairInfoDialogs;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
+# contract @mozilla.org/nsSSLCertErrorDialog;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
+
+# PromptService.js
+component {9a61149b-2276-4a0a-b79c-be994ad106cf} PromptService.js
+# contract @mozilla.org/prompter;1 {9a61149b-2276-4a0a-b79c-be994ad106cf}
+contract @mozilla.org/embedcomp/prompt-service;1 {9a61149b-2276-4a0a-b79c-be994ad106cf}
+category wakeup-request PromptService @mozilla.org/embedcomp/prompt-service;1,nsIPromptService,getService,Prompt:Call
