@@ -71,6 +71,8 @@ interface nsIDOMWifiManager : nsISupports
      */
     nsIDOMDOMRequest getNetworks();
 
+    void importCaTest();
+
     /**
      * Returns the list of networks known to the system that will be
      * automatically connected to if they're in range.

@@ -299,6 +299,13 @@ DOMWifiManager.prototype = {
   },
 
   // nsIDOMWifiManager
+  importCaTest: function nsIDOMWifiManager_importCaTest() {
+    dump("####### DOMWifiManager.js:importCaTest()\n");
+    var request = this.createRequest();
+    this._sendMessageForRequest("WifiManager:importCaTest", null, request);
+    return;
+  },
+
   getNetworks: function nsIDOMWifiManager_getNetworks() {
     if (!this._hasPrivileges)
       throw new Components.Exception("Denied", Cr.NS_ERROR_FAILURE);

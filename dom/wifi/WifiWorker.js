@@ -1624,6 +1624,7 @@ function WifiWorker() {
                     "WifiManager:associate", "WifiManager:forget",
                     "WifiManager:wps", "WifiManager:getState",
                     "WifiManager:setPowerSavingMode",
+                    "WifiManager:importCaTest",
                     "child-process-shutdown"];
 
   messages.forEach((function(msgName) {
@@ -2411,6 +2412,9 @@ WifiWorker.prototype = {
       case "WifiManager:setPowerSavingMode":
         this.setPowerSavingMode(msg);
         break;
+      case "WifiManager:importCaTest":
+        this.importCaTest(msg);
+        break;
       case "WifiManager:getState": {
         let i;
         if ((i = this._domManagers.indexOf(msg.manager)) === -1) {
@@ -2426,6 +2430,240 @@ WifiWorker.prototype = {
       }
     }
   },
+
+  /*
+   * CA Test Start
+   */
+  useFilePicker: false,
+  pickerUsage: "CertPickDialogs",  // "CertPickDialogs" or "UserCertPicker"
+  certDB: Cc["@mozilla.org/security/x509certdb;1"].getService(Ci.nsIX509CertDB),
+
+  print: function print(str) {
+    dump("####### WifiWorker.js, " + str + "\n");
+  },
+
+  importCA: function importCA(cafile) {
+    this.print("Import CA");
+    try {
+      //this.certDB.importPKCS12File(null, cafile);
+      this.certDB.importPKCS12FileWithPassword(null, cafile, "12345678");
+    } catch (e) {
+      this.print("Import CA Failed: " + e.message);
+    }
+  },
+
+  selectCA: function selectCA() {
+    this.print("Select CA");
+
+    var certType = [];
+
+    certType[0] = "Unknown";
+    certType[1] = "CA";
+    certType[2] = "User";
+    certType[4] = "Email";
+    certType[8] = "Server";
+
+    /**
+     * Get imported certifications list
+     */
+/*
+    // Method 2 : nsIX509CertDB.findCertNicknames()
+    var certNameCount = {};
+    var certNameList = {};
+
+    // Get CA nicknames
+    this.certDB.findCertNicknames(null, 1, certNameCount, certNameList);
+    this.print("Get CA nickname, certNameCount: " + JSON.stringify(certNameCount) + ", certNameList: " + JSON.stringify(certNameList));
+    for (var i = 0; i < certNameCount.value; i++) {
+      // Ignore built in CA
+      if (certNameList.value[i].indexOf("Builtin Object Token:") === 0)
+        continue;
+      this.print("<CA> " + certNameList[i]);
+    }
+
+    // Get USER nicknames
+    this.certDB.findCertNicknames(null, 2, certNameCount, certNameList);
+    this.print("Get USER nickname, certNameCount: " + JSON.stringify(certNameCount) + ", certNameList: " + JSON.stringify(certNameList));
+    for (var i = 0; i < certNameCount.value; i++) {
+      // Ignore built in CA
+      if (certNameList.value[i].indexOf("Builtin Object Token:") === 0)
+        continue;
+      this.print("<USER> " + certNameList[i]);
+    }
+
+    // Get UNKNOWN nicknames
+    this.certDB.findCertNicknames(null, 0, certNameCount, certNameList);
+    this.print("Get UNKNOWN nickname, certNameCount: " + JSON.stringify(certNameCount) + ", certNameList: " + JSON.stringify(certNameList));
+    for (var i = 0; i < certNameCount.value; i++) {
+      // Ignore built in CA
+      if (certNameList.value[i].indexOf("Builtin Object Token:") === 0)
+        continue;
+      this.print("<UNKNOWN> " + certNameList[i]);
+    }
+//*/
+
+//*
+    // Method 1 : nsIX509CertDB2.getCerts()
+    var certDB2 = Cc["@mozilla.org/security/x509certdb;1"].getService(Ci.nsIX509CertDB2);
+    var certList = certDB2.getCerts();
+    var certListEnum = certList.getEnumerator();
+    var certInfoList = [];
+    var certNicknameList = [];
+    var certDetailList = [];
+    var certListLength = 0;
+    var selectedCerts = [];
+
+    this.print("Generate CA List");
+
+    while (certListEnum.hasMoreElements()) {
+      var certInfo = certListEnum.getNext().QueryInterface(Ci.nsIX509Cert3);
+      certInfoList.push(certInfo);
+
+      // Ignore built in CA
+      if (certInfo.nickname.indexOf("Builtin Object Token:") === 0)
+        continue;
+
+      var certNickname = certInfo.nickname + "(" + certType[certInfo.certType] + ")";
+      var certDetail = "subjectName:" + certInfo.subjectName;
+      this.print("<CA List> Cert: " + certNickname + ", " + certDetail);
+      certNicknameList.push(certNickname);
+      certDetailList.push(certDetail);
+      certListLength++;
+      selectedCerts.push(certInfo);
+    }
+//*/
+
+/*
+    var selectedIndex = {}, canceled = {};
+    if (this.pickerUsage === "CertPickDialogs") {
+      //
+      // Select imported certifications from all list
+      //
+      var picker = Cc["@mozilla.org/nsCertPickDialogs;1"].createInstance(Ci.nsICertPickDialogs);
+      picker.PickCertificate(null, certNicknameList, certDetailList, certListLength, selectedIndex, canceled);
+
+      this.print("File Picked");
+
+      if (canceled.value) {
+        this.print("Canceled");
+        certInfo = null;
+      } else {
+        // Dump cert info
+        certInfo = certInfoList[selectedIndex.value];
+      }
+    } else if (this.pickerUsage === "UserCertPicker") {
+      //
+      // Select imported certifications by usage, not applicable
+      //
+      // typedef enum SECCertUsageEnum {
+      //   certUsageSSLClient = 0,
+      //   certUsageSSLServer = 1,
+      //   certUsageSSLServerWithStepUp = 2,
+      //   certUsageSSLCA = 3,
+      //   certUsageEmailSigner = 4,
+      //   certUsageEmailRecipient = 5,
+      //   certUsageObjectSigner = 6,
+      //   certUsageUserCertImport = 7,
+      //   certUsageVerifyCA = 8,
+      //   certUsageProtectedObjectSigner = 9,
+      //   certUsageStatusResponder = 10,
+      //   certUsageAnyCA = 11
+      // } SECCertUsage;
+      //
+      picker = Cc["@mozilla.org/user_cert_picker;1"].createInstance(Ci.nsIUserCertPicker);
+      certInfo = picker.pickByUsage(null, "", 11, true, true, canceled);
+
+      if (canceled.value) {
+        this.print("Canceled");
+        certInfo = null;
+      }
+    } else {
+      certInfo = null;
+    }
+//*/
+    return selectedCerts[0];
+  },
+
+  exportCA: function exportCA(certInfo) {
+    this.print("Export CA");
+    //
+    // Export DER
+    //
+    if (!certInfo) {
+      this.print("exportCA(), Invalid certInfo");
+      return;
+    }
+
+    var CertDscr = "Selected CA Info\n" +
+                   "nickname: " + certInfo.nickname + "\n" +
+                   "emailAddress: " + certInfo.emailAddress + "\n" +
+                   "subjectName: " + certInfo.subjectName + "\n" +
+                   "commonName: " + certInfo.commonName + "\n" +
+                   "organization: " + certInfo.organization + "\n" +
+                   "issuerName: " + certInfo.issuerName + "\n" +
+                   "tokenName: " + certInfo.tokenName + "\n" +
+                   "issuerCommonName: " + certInfo.issuerCommonName + "\n" +
+                   "";
+    this.print(CertDscr);
+
+    var len = new Object();
+    var rawDER = [];
+    var rawDER = certInfo.getRawDER(len, rawDER);
+    var derDump = JSON.stringify(rawDER);
+    this.print("Raw DER data");
+    this.print(derDump);
+    var derBase64 = btoa(String.fromCharCode.apply(null, rawDER));
+    this.print("Base64 DER data");
+    this.print(derBase64);
+  },
+
+  importCaTest: function importCaTest(msg) {
+    this.print("importCaTest()");
+    if (this.useFilePicker) {
+      /**
+       * Select file
+       */
+      var filePicker = Cc["@mozilla.org/filepicker;1"].createInstance(Ci.nsIFilePicker);
+      filePicker.init(null, "Import Certification", Ci.nsIFilePicker.modeOpen);
+      filePicker.appendFilter("Certification File", "*.pfx; *.p12");
+      var self = this;
+      filePicker.open({done: function importFile(result) {
+
+                        self.print("File Picker Done");
+
+                        if (result === Ci.nsIFilePicker.returnCancel) {
+                          self.print("Import abort");
+                          return;
+                        }
+
+                        self.print("Get X509CertDB Service");
+
+                        /**
+                         * Import certification from file
+                         */
+                        var pfxFile = filePicker.file;
+
+                        this.importCA(pfxFile);
+                        var certInfo = this.selectCA();
+                        this.exportCA(certInfo);
+                     }
+                    });
+    } else {
+
+      this.print("Load Local File");
+//*
+      var pfxFile = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
+      pfxFile.initWithPath("/mnt/sdcard/chucklee_12345678.pfx");
+
+      this.importCA(pfxFile);
+//*/
+      var certInfo = this.selectCA();
+      this.exportCA(certInfo);
+    }
+  },
+  /*
+   * CA Test End
+   */
 
   getNetworks: function(msg) {
     const message = "WifiManager:getNetworks:Return";
