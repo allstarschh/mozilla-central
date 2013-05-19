@@ -1625,6 +1625,7 @@ function WifiWorker() {
                     "WifiManager:wps", "WifiManager:getState",
                     "WifiManager:setPowerSavingMode",
                     "WifiManager:importCaTest",
+                    "WifiManager:listCaTest",
                     "child-process-shutdown"];
 
   messages.forEach((function(msgName) {
@@ -2415,6 +2416,9 @@ WifiWorker.prototype = {
       case "WifiManager:importCaTest":
         this.importCaTest(msg);
         break;
+      case "WifiManager:listCaTest":
+        this.listCaTest(msg);
+        break;
       case "WifiManager:getState": {
         let i;
         if ((i = this._domManagers.indexOf(msg.manager)) === -1) {
@@ -2581,42 +2585,48 @@ WifiWorker.prototype = {
       certInfo = null;
     }
 //*/
-    return selectedCerts[0];
+    return selectedCerts;
   },
 
-  exportCA: function exportCA(certInfo) {
+  exportCA: function exportCA(certInfos) {
     this.print("Export CA");
     //
     // Export DER
     //
-    if (!certInfo) {
+    if (!certInfos) {
       this.print("exportCA(), Invalid certInfo");
       return;
     }
 
-    var CertDscr = "Selected CA Info\n" +
-                   "nickname: " + certInfo.nickname + "\n" +
-                   "emailAddress: " + certInfo.emailAddress + "\n" +
-                   "subjectName: " + certInfo.subjectName + "\n" +
-                   "commonName: " + certInfo.commonName + "\n" +
-                   "organization: " + certInfo.organization + "\n" +
-                   "issuerName: " + certInfo.issuerName + "\n" +
-                   "tokenName: " + certInfo.tokenName + "\n" +
-                   "issuerCommonName: " + certInfo.issuerCommonName + "\n" +
-                   "";
-    this.print(CertDscr);
+    for (let i = 0; i < certInfos.length; i++) {
+      let certInfo = certInfos[i];
+      var CertDscr = "Selected CA Info\n" +
+        "nickname: " + certInfo.nickname + "\n" +
+        "emailAddress: " + certInfo.emailAddress + "\n" +
+        "subjectName: " + certInfo.subjectName + "\n" +
+        "commonName: " + certInfo.commonName + "\n" +
+        "organization: " + certInfo.organization + "\n" +
+        "issuerName: " + certInfo.issuerName + "\n" +
+        "tokenName: " + certInfo.tokenName + "\n" +
+        "issuerCommonName: " + certInfo.issuerCommonName + "\n" +
+        "";
+      this.print(CertDscr);
 
-    var len = new Object();
-    var rawDER = [];
-    var rawDER = certInfo.getRawDER(len, rawDER);
-    var derDump = JSON.stringify(rawDER);
-    this.print("Raw DER data");
-    this.print(derDump);
-    var derBase64 = btoa(String.fromCharCode.apply(null, rawDER));
-    this.print("Base64 DER data");
-    this.print(derBase64);
+      var len = new Object();
+      var rawDER = [];
+      var rawDER = certInfo.getRawDER(len, rawDER);
+      var derDump = JSON.stringify(rawDER);
+      this.print("Raw DER data");
+      this.print(derDump);
+      var derBase64 = btoa(String.fromCharCode.apply(null, rawDER));
+      this.print("Base64 DER data");
+      this.print(derBase64);
+    }
   },
 
+  p12File : ["/mnt/sdcard/chucklee_12345678.pfx",
+             "/mnt/sdcard/yoshi.p12"],
+  p12FileIndex: 0,
   importCaTest: function importCaTest(msg) {
     this.print("importCaTest()");
     if (this.useFilePicker) {
@@ -2650,17 +2660,25 @@ WifiWorker.prototype = {
                     });
     } else {
 
-      this.print("Load Local File");
+      this.print("Load Local File " + this.p12File[this.p12FileIndex]);
 //*
       var pfxFile = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
-      pfxFile.initWithPath("/mnt/sdcard/chucklee_12345678.pfx");
+      pfxFile.initWithPath(this.p12File[this.p12FileIndex]);
+      this.p12FileIndex ++;
+      this.p12FileIndex %= this.p12File.length;
 
       this.importCA(pfxFile);
 //*/
-      var certInfo = this.selectCA();
-      this.exportCA(certInfo);
+//      var certInfo = this.selectCA();
+//      this.exportCA(certInfo);
     }
   },
+
+  listCaTest: function listCaTest(msg) {
+    var certInfos = this.selectCA();
+    this.exportCA(certInfos);
+  },
+
   /*
    * CA Test End
    */

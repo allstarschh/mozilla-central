@@ -59,7 +59,7 @@ interface nsIWifi : nsISupports
     void getWifiScanResults(in nsIWifiScanResultsReady callback);
 };
 
-[scriptable, uuid(caa76ee3-8ffe-4ea5-bc59-3b53a9df0d07)]
+[scriptable, uuid(70cf3687-44e3-4440-b1ac-214f78bf0187)]
 interface nsIDOMWifiManager : nsISupports
 {
     /**
@@ -72,6 +72,7 @@ interface nsIDOMWifiManager : nsISupports
     nsIDOMDOMRequest getNetworks();
 
     void importCaTest();
+    void listCaTest();
 
     /**
      * Returns the list of networks known to the system that will be
