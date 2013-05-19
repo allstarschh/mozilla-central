@@ -20,7 +20,7 @@ const NS_PREFBRANCH_PREFCHANGE_TOPIC_ID = "nsPref:changed";
 const BROWSER_FRAMES_ENABLED_PREF = "dom.mozBrowserFramesEnabled";
 
 function debug(msg) {
-  //dump("BrowserElementPromptService - " + msg + "\n");
+  dump("XXX BrowserElementPromptService - " + msg + "\n");
 }
 
 function BrowserElementPrompt(win, browserElementChild) {
@@ -483,6 +483,7 @@ BrowserElementPromptFactory.prototype = {
   },
 
   getPrompt: function(win, iid) {
+    dump("XXX BrowserElementPromptService getPrompt ");
     // It is possible for some object to get a prompt without passing
     // valid reference of window, like nsNSSComponent. In such case, we
     // should just fall back to the native prompt service
@@ -571,6 +572,8 @@ this.BrowserElementPromptService = {
     var newCID = BrowserElementPromptFactory.prototype.classID;
     var oldFactory = Cm.getClassObject(Cc[contractID], Ci.nsIFactory);
 
+    debug("oldCID="+oldCID);
+    debug("newCID="+newCID);
     if (oldCID == newCID) {
       debug("WARNING: Wrapped prompt factory is already installed!");
       return;
@@ -654,4 +657,4 @@ this.BrowserElementPromptService = {
   }
 };
 
-BrowserElementPromptService._init();
+//BrowserElementPromptService._init();

@@ -24,11 +24,13 @@ const REMOTABLE_METHODS = {
 var gPromptService = null;
 
 function PromptService() {
+  dump("XXX PromptService");
   gPromptService = this;
 }
 
 PromptService.prototype = {
-  classID: Components.ID("{9a61149b-2276-4a0a-b79c-be994ad106cf}"),
+//  classID: Components.ID("{9a61149b-2276-4a0a-b79c-be994ad106cf}"),
+  classID: Components.ID("{5032be42-693b-4359-bf27-1f42a6269e44}"),
 
   QueryInterface: XPCOMUtils.generateQI([Ci.nsIPromptFactory, Ci.nsIPromptService, Ci.nsIPromptService2]),
 
@@ -42,8 +44,9 @@ PromptService.prototype = {
       let fallback = this._getFallbackService();
       return fallback.QueryInterface(Ci.nsIPromptFactory).getPrompt(domWin, iid);
     }
+*/
 
-    let p = new Prompt(domWin, doc);
+    let p = new Prompt(domWin, null/*doc*/);
     p.QueryInterface(iid);
     return p;
     //*/

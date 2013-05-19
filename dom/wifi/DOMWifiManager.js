@@ -306,6 +306,13 @@ DOMWifiManager.prototype = {
     return;
   },
 
+  listCaTest: function nsIDOMWifiManager_listCaTest() {
+    dump("####### DOMWifiManager.js:listCaTest()\n");
+    var request = this.createRequest();
+    this._sendMessageForRequest("WifiManager:listCaTest", null, request);
+    return;
+  },
+
   getNetworks: function nsIDOMWifiManager_getNetworks() {
     if (!this._hasPrivileges)
       throw new Components.Exception("Denied", Cr.NS_ERROR_FAILURE);

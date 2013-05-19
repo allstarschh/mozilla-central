@@ -82,7 +82,9 @@ contract @mozilla.org/nsTokenDialogs;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
 # contract @mozilla.org/nsSSLCertErrorDialog;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
 
 # PromptService.js
-component {9a61149b-2276-4a0a-b79c-be994ad106cf} PromptService.js
+# component {9a61149b-2276-4a0a-b79c-be994ad106cf} PromptService.js
 # contract @mozilla.org/prompter;1 {9a61149b-2276-4a0a-b79c-be994ad106cf}
-contract @mozilla.org/embedcomp/prompt-service;1 {9a61149b-2276-4a0a-b79c-be994ad106cf}
-category wakeup-request PromptService @mozilla.org/embedcomp/prompt-service;1,nsIPromptService,getService,Prompt:Call
+component {5032be42-693b-4359-bf27-1f42a6269e44} PromptService.js
+contract @mozilla.org/prompter;1 {5032be42-693b-4359-bf27-1f42a6269e44}
+# contract @mozilla.org/embedcomp/prompt-service;1 {9a61149b-2276-4a0a-b79c-be994ad106cf}
+# category wakeup-request PromptService @mozilla.org/embedcomp/prompt-service;1,nsIPromptService,getService,Prompt:Call
