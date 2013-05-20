@@ -2451,6 +2451,7 @@ WifiWorker.prototype = {
     try {
       //this.certDB.importPKCS12File(null, cafile);
       this.certDB.importPKCS12FileWithPassword(null, cafile, "12345678");
+//      this.certDB.importPKCS12FileWithPassword(null, cafile, "yoshi2");
     } catch (e) {
       this.print("Import CA Failed: " + e.message);
     }
@@ -2467,11 +2468,13 @@ WifiWorker.prototype = {
     certType[4] = "Email";
     certType[8] = "Server";
 
+//    var selectedCerts = [];
     /**
      * Get imported certifications list
      */
-/*
+
     // Method 2 : nsIX509CertDB.findCertNicknames()
+    /*
     var certNameCount = {};
     var certNameList = {};
 
@@ -2482,7 +2485,8 @@ WifiWorker.prototype = {
       // Ignore built in CA
       if (certNameList.value[i].indexOf("Builtin Object Token:") === 0)
         continue;
-      this.print("<CA> " + certNameList[i]);
+      this.print("<CA> " + certNameList.value[i]);
+      selectedCerts.push(certNameList.value[i]);
     }
 
     // Get USER nicknames
@@ -2493,6 +2497,7 @@ WifiWorker.prototype = {
       if (certNameList.value[i].indexOf("Builtin Object Token:") === 0)
         continue;
       this.print("<USER> " + certNameList[i]);
+      selectedCerts.push(certNameList.value[i]);
     }
 
     // Get UNKNOWN nicknames
@@ -2503,10 +2508,10 @@ WifiWorker.prototype = {
       if (certNameList.value[i].indexOf("Builtin Object Token:") === 0)
         continue;
       this.print("<UNKNOWN> " + certNameList[i]);
+      selectedCerts.push(certNameList.value[i]);
     }
-//*/
-
-//*
+//
+*/
     // Method 1 : nsIX509CertDB2.getCerts()
     var certDB2 = Cc["@mozilla.org/security/x509certdb;1"].getService(Ci.nsIX509CertDB2);
     var certList = certDB2.getCerts();
@@ -2530,12 +2535,15 @@ WifiWorker.prototype = {
       var certNickname = certInfo.nickname + "(" + certType[certInfo.certType] + ")";
       var certDetail = "subjectName:" + certInfo.subjectName;
       this.print("<CA List> Cert: " + certNickname + ", " + certDetail);
+      let props = ["nickname", "sha1Fingerprint", "md5Fingerprint", "dbKey"];
+      for (let i = 0; i < props.length; i++) {
+        this.print("prop "+props[i]+" = "+certInfo[props[i]]);
+      }
       certNicknameList.push(certNickname);
       certDetailList.push(certDetail);
       certListLength++;
       selectedCerts.push(certInfo);
     }
-//*/
 
 /*
     var selectedIndex = {}, canceled = {};
@@ -2627,6 +2635,7 @@ WifiWorker.prototype = {
   p12File : ["/mnt/sdcard/chucklee_12345678.pfx",
              "/mnt/sdcard/yoshi.p12"],
   p12FileIndex: 0,
+
   importCaTest: function importCaTest(msg) {
     this.print("importCaTest()");
     if (this.useFilePicker) {

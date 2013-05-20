@@ -12,6 +12,7 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
 function Prompter() {
+    dump("XXX nsPrompter.js prompts");
     // Note that EmbedPrompter clones this implementation.
 }
 
@@ -31,6 +32,7 @@ Prompter.prototype = {
 
 
     getPrompt : function (domWin, iid) {
+	      dump("XXX getPrompt enter");
         // This is still kind of dumb; the C++ code delegated to login manager
         // here, which in turn calls back into us via nsIPromptService2.
         if (iid.equals(Ci.nsIAuthPrompt2) || iid.equals(Ci.nsIAuthPrompt)) {

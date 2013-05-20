@@ -63,6 +63,11 @@
 #include "nsIWeakReference.h"
 #endif
 
+#ifdef LOG
+#error "XXX"
+#endif
+#include <android/log.h>
+#define LOGI(args...)  __android_log_print(ANDROID_LOG_INFO, "nsWindowWatcher.cpp", args)
 using namespace mozilla;
 
 /****************************************************************
@@ -1065,10 +1070,13 @@ nsWindowWatcher::GetWindowEnumerator(nsISimpleEnumerator** _retval)
 NS_IMETHODIMP
 nsWindowWatcher::GetNewPrompter(nsIDOMWindow *aParent, nsIPrompt **_retval)
 {
+  LOGI("XXX %s enter", __func__);
   // This is for backwards compat only. Callers should just use the prompt service directly.
   nsresult rv;
   nsCOMPtr<nsIPromptFactory> factory = do_GetService("@mozilla.org/prompter;1", &rv);
   NS_ENSURE_SUCCESS(rv, rv);
+
+  LOGI("XXX %s exit rv=%d", __func__, rv);
   return factory->GetPrompt(aParent, NS_GET_IID(nsIPrompt), reinterpret_cast<void**>(_retval));
 }
 

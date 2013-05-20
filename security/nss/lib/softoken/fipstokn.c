@@ -50,6 +50,12 @@
 #define AUDIT_CRYPTO_KEY_USER           2404 /* Create,delete,negotiate */
 #define AUDIT_CRYPTO_FAILURE_USER       2405 /* Fail decrypt,encrypt,randomize */
 #endif
+#ifdef LOG
+#error "XXX"
+#endif
+#include <android/log.h>
+#define LOGI(args...)  __android_log_print(ANDROID_LOG_INFO, "fipstoken.c", args)
+
 static void *libaudit_handle;
 static int (*audit_open_func)(void);
 static void (*audit_close_func)(int fd);

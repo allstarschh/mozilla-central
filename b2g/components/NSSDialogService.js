@@ -35,7 +35,8 @@ NSSDialogs.prototype = {
   QueryInterface: XPCOMUtils.generateQI([Ci.nsICertificateDialogs,
                                          Ci.nsIClientAuthDialogs,
                                          Ci.nsITokenPasswordDialogs,
-                                         Ci.nsITokenDialogs]),
+                                         Ci.nsITokenDialogs,
+                                         Ci.nsIPrompt]),
   // UseToken: "Generic Crypto Services",
   // UseToken: "Builtin Object Token",
   UseToken: "Software Security Device",
@@ -224,6 +225,7 @@ NSSDialogs.prototype = {
     aPassword.value = response.pw;
     //*/
     aPassword.value = this.UsePassword;
+//    aPassword.value = "yoshi2";//this.UsePassword;
     return true;
   },
 
@@ -376,12 +378,20 @@ NSSDialogs.prototype = {
    * nsITokenDialogs
    */
   ChooseToken: function ChooseToken(aCtx, aTokenNameList, aCount, aTokenName, aCanceled) {
+    dump("XXX chooseToken");
     aTokenName.value = "Token Name Test";
     aCanceled.value = false;
     return true;
   },
 
   displayProtectedAuth: function displayProtectedAuth(aCtx, aRunnable) {
+    dump("XXX displayProtectedAuth");
+    return true;
+  },
+
+  // nsIPrompt
+  prompt: function prompt(dialogTitle, text, value, checkMsg, checkValue) {
+    dump("XXX dialogTitle="+dialogTitle+" text="+text+" value="+value+" checkMsg="+checkMsg+" checkValue="+checkValue);
     return true;
   }
 };

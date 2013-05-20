@@ -49,6 +49,7 @@ function onLoad()
         for ( ; !tokenList.isDone(); tokenList.next()) {
            enumElement = tokenList.currentItem();
            var token = enumElement.QueryInterface(nsIPK11Token);
+           dump("XXX password.js call needsUserInit");
            if(token.needsLogin() || !(token.needsUserInit)) {
               var menuItemNode = document.createElement("menuitem");
               menuItemNode.setAttribute("value", token.tokenName);

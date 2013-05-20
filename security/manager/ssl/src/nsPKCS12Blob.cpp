@@ -29,6 +29,12 @@
 
 #include "secerr.h"
 
+#ifdef LOG
+#error "XXX"
+#endif
+#include <android/log.h>
+#define LOGI(args...)  __android_log_print(ANDROID_LOG_INFO, "nsPKCS12Blob.cpp", args)
+
 #ifdef PR_LOGGING
 extern PRLogModuleInfo* gPIPNSSLog;
 #endif
@@ -95,6 +101,7 @@ nsPKCS12Blob::SetToken(nsIPK11Token *token)
 nsresult
 nsPKCS12Blob::ImportFromFile(nsIFile *file, const PRUnichar *password/*= nullptr*/)
 {
+  LOGI("XXX %s enter", __func__);
   nsNSSShutDownPreventionLock locker;
   nsresult rv = NS_OK;
 
@@ -103,6 +110,7 @@ nsPKCS12Blob::ImportFromFile(nsIFile *file, const PRUnichar *password/*= nullptr
       rv = SetToken(nullptr); // Ask the user to pick a slot
       if (NS_FAILED(rv)) {
         handleError(PIP_PKCS12_USER_CANCELED);
+        LOGI("XXX %s exit 1", __func__);
         return rv;
       }
     }
@@ -110,12 +118,16 @@ nsPKCS12Blob::ImportFromFile(nsIFile *file, const PRUnichar *password/*= nullptr
 
   if (!mToken) {
     handleError(PIP_PKCS12_RESTORE_FAILED);
+    LOGI("XXX %s exit 2", __func__);
     return NS_ERROR_NOT_AVAILABLE;
   }
 
   // init slot
   rv = mToken->Login(true);
-  if (NS_FAILED(rv)) return rv;
+  if (NS_FAILED(rv)) {
+    LOGI("XXX %s exit 3", __func__);
+    return rv;
+  }
 
   RetryReason wantRetry;
 
@@ -129,6 +141,7 @@ nsPKCS12Blob::ImportFromFile(nsIFile *file, const PRUnichar *password/*= nullptr
   }
   while (NS_SUCCEEDED(rv) && (wantRetry != rr_do_not_retry));
 
+  LOGI("XXX %s exit", __func__);
   return rv;
 }
 
@@ -150,6 +163,7 @@ nsPKCS12Blob::ImportFromFileHelper(nsIFile *file,
 
   aWantRetry = rr_do_not_retry;
 
+  LOGI("XXX %s enter", __func__);
   if (aImportMode == im_try_zero_length_secitem)
   {
     unicodePw.len = 0;
@@ -181,6 +195,7 @@ nsPKCS12Blob::ImportFromFileHelper(nsIFile *file,
   }
   if (!slot) {
     srv = SECFailure;
+    LOGI("XXX %s goto 1", __func__);
     goto finish;
   }
 
@@ -191,6 +206,7 @@ nsPKCS12Blob::ImportFromFileHelper(nsIFile *file,
                                this);
   if (!dcx) {
     srv = SECFailure;
+    LOGI("XXX %s goto 2", __func__);
     goto finish;
   }
   // read input file and feed it to the decoder
@@ -200,17 +216,27 @@ nsPKCS12Blob::ImportFromFileHelper(nsIFile *file,
       // inputToDecoder indicated a NSS error
       srv = SECFailure;
     }
+    LOGI("XXX %s goto 3", __func__);
     goto finish;
   }
   // verify the blob
   srv = SEC_PKCS12DecoderVerify(dcx);
-  if (srv) goto finish;
+  if (srv) {
+    LOGI("XXX %s goto 4", __func__);
+    goto finish;
+  }
   // validate bags
   srv = SEC_PKCS12DecoderValidateBags(dcx, nickname_collision);
-  if (srv) goto finish;
+  if (srv) {
+    LOGI("XXX %s goto 5", __func__);
+    goto finish;
+  }
   // import cert and key
   srv = SEC_PKCS12DecoderImportBags(dcx);
-  if (srv) goto finish;
+  if (srv) {
+    LOGI("XXX %s goto 6", __func__);
+    goto finish;
+  }
   // Later - check to see if this should become default email cert
   handleError(PIP_PKCS12_RESTORE_OK);
 finish:
@@ -244,6 +270,7 @@ finish:
   if (dcx)
     SEC_PKCS12DecoderFinish(dcx);
   SECITEM_ZfreeItem(&unicodePw, false);
+  LOGI("XXX %s exit", __func__);
   return NS_OK;
 }
 
@@ -692,6 +719,7 @@ nsPKCS12Blob::digest_write(void *arg, unsigned char *buf, unsigned long len)
 SECItem *
 nsPKCS12Blob::nickname_collision(SECItem *oldNick, PRBool *cancel, void *wincx)
 {
+  LOGI("XXX %s enter", __func__);
   nsNSSShutDownPreventionLock locker;
   *cancel = false;
   nsresult rv;

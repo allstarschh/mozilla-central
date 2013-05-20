@@ -96,6 +96,12 @@
 #include "pkcs12.h"
 #include "p12plcy.h"
 
+#ifdef LOG
+#error "XXX"
+#endif
+#include <android/log.h>
+#define LOGI(args...)  __android_log_print(ANDROID_LOG_INFO, "nsNSSComponet.cpp", args)
+
 using namespace mozilla;
 using namespace mozilla::dom;
 using namespace mozilla::psm;
@@ -2313,6 +2319,7 @@ nsNSSComponent::Observe(nsISupports *aSubject, const char *aTopic,
 /*static*/ nsresult
 nsNSSComponent::GetNewPrompter(nsIPrompt ** result)
 {
+  LOGI("XXX %s enter", __func__);
   NS_ENSURE_ARG_POINTER(result);
   *result = nullptr;
 
@@ -2328,6 +2335,7 @@ nsNSSComponent::GetNewPrompter(nsIPrompt ** result)
   rv = wwatch->GetNewPrompter(0, result);
   NS_ENSURE_SUCCESS(rv, rv);
 
+  LOGI("XXX %s exit rv=%d", __func__, rv);
   return rv;
 }
 
@@ -2933,6 +2941,7 @@ NS_IMETHODIMP PipUIContext::GetInterface(const nsIID & uuid, void * *result)
   NS_ENSURE_ARG_POINTER(result);
   *result = nullptr;
 
+  LOGI("XXX %s enter", __func__);
   if (!NS_IsMainThread()) {
     NS_ERROR("PipUIContext::GetInterface called off the main thread");
     return NS_ERROR_NOT_SAME_THREAD;
@@ -2944,6 +2953,7 @@ NS_IMETHODIMP PipUIContext::GetInterface(const nsIID & uuid, void * *result)
   nsIPrompt * prompt = nullptr;
   nsresult rv = nsNSSComponent::GetNewPrompter(&prompt);
   *result = prompt;
+  LOGI("XXX %s exit", __func__);
   return rv;
 }
 
@@ -2972,6 +2982,7 @@ setPassword(PK11SlotInfo *slot, nsIInterfaceRequestor *ctx)
   nsNSSShutDownPreventionLock locker;
   nsresult rv = NS_OK;
   
+  LOGI("%s enter", __func__);
   if (PK11_NeedUserInit(slot)) {
     nsITokenPasswordDialogs *dialogs;
     bool canceled;
