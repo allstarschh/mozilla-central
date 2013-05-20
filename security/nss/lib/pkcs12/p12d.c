@@ -25,6 +25,12 @@
 
 #include "prcpucfg.h"
 
+#ifdef LOG
+#error "XXX"
+#endif
+#include <android/log.h>
+#define LOGI(args...)  __android_log_print(ANDROID_LOG_INFO, "p12d.c", args)
+
 /* This belongs in secport.h */
 #define PORT_ArenaGrowArray(poolp, oldptr, type, oldnum, newnum) \
     (type *)PORT_ArenaGrow((poolp), (oldptr), \
@@ -2158,6 +2164,7 @@ sec_pkcs12_validate_cert_nickname(sec_PKCS12SafeBag *cert,
 				SEC_PKCS12NicknameCollisionCallback nicknameCb,
 				CERTCertificate *leafCert)
 {
+    LOGI("XXX %s enter", __func__);
     SECItem *certNickname, *existingDNNick;
     PRBool setNickname = PR_FALSE, cancel = PR_FALSE;
     SECItem *newNickname = NULL;
@@ -2270,6 +2277,7 @@ sec_pkcs12_validate_cert(sec_PKCS12SafeBag *cert,
 			 sec_PKCS12SafeBag *key,
 			 SEC_PKCS12NicknameCollisionCallback nicknameCb)
 {
+    LOGI("XXX %s enter", __func__);
     CERTCertificate *leafCert;
 
     if(!cert) {
@@ -2669,6 +2677,7 @@ sec_pkcs12_validate_bags(sec_PKCS12SafeBag **safeBags,
     sec_PKCS12SafeBag **keyList;
     int i;
 
+    LOGI("XXX %s enter", __func__);
     if(!safeBags || !nicknameCb) {
 	PORT_SetError(SEC_ERROR_INVALID_ARGS);
 	return SECFailure;
@@ -2711,6 +2720,7 @@ sec_pkcs12_validate_bags(sec_PKCS12SafeBag **safeBags,
 			cert->error   = key->error;
 			continue;
 		    } 
+                    LOGI("XXX %s 1", __func__);
 		    sec_pkcs12_validate_cert(cert, key, nicknameCb);
 		    if(cert->problem) {
 			key->problem = cert->problem;
@@ -2732,6 +2742,7 @@ sec_pkcs12_validate_bags(sec_PKCS12SafeBag **safeBags,
 
 	    switch(bagType) {
 	    case SEC_OID_PKCS12_V1_CERT_BAG_ID:
+                LOGI("XXX %s 2", __func__);
 		sec_pkcs12_validate_cert(bag, NULL, nicknameCb);
 		break;
 	    case SEC_OID_PKCS12_V1_KEY_BAG_ID:
@@ -2753,6 +2764,7 @@ SECStatus
 SEC_PKCS12DecoderValidateBags(SEC_PKCS12DecoderContext *p12dcx,
 			      SEC_PKCS12NicknameCollisionCallback nicknameCb)
 {
+    LOGI("XXX %s enter", __func__);
     SECStatus rv;
     int i, noInstallCnt, probCnt, bagCnt, errorVal = 0;
     if(!p12dcx || p12dcx->error || !p12dcx->safeBags) {

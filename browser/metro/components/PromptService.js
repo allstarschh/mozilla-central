@@ -24,6 +24,7 @@ const REMOTABLE_METHODS = {
 var gPromptService = null;
 
 function PromptService() {
+    dump("XXX nsPrompter.js metro");
   // Depending on if we are in the parent or child, prepare to remote
   // certain calls
   var appInfo = Cc["@mozilla.org/xre/app-info;1"];
@@ -69,6 +70,7 @@ PromptService.prototype = {
 
   // XXX Copied from nsPrompter.js.
   getPrompt: function getPrompt(domWin, iid) {
+    dump("XXX PrompterService.getPrompt Metro ");
     if (this.inContentProcess)
       return ContentPrompt.QueryInterface(iid);
 

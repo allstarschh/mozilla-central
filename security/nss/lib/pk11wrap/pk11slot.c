@@ -20,6 +20,11 @@
 #include "utilpars.h"
 
 
+#ifdef LOG
+#error "XXX"
+#endif
+#include <android/log.h>
+#define LOGI(args...)  __android_log_print(ANDROID_LOG_INFO, "pk11slot.c", args)
 /*************************************************************
  * local static and global data
  *************************************************************/
@@ -1707,6 +1712,7 @@ PK11_NeedUserInit(PK11SlotInfo *slot)
     PRBool needUserInit = (PRBool) ((slot->flags & CKF_USER_PIN_INITIALIZED) 
 					== 0);
 
+    LOGI("XXX %s enter flags=%u needUserInit=%d", __func__, slot->flags, needUserInit);
     if (needUserInit) {
 	CK_TOKEN_INFO info;
 	SECStatus rv;

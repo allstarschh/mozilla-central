@@ -37,16 +37,17 @@ PromptService.prototype = {
   /* ----------  nsIPromptFactory  ---------- */
   // XXX Copied from nsPrompter.js.
   getPrompt: function getPrompt(domWin, iid) {
-    dump("######## PromptService.js:getPrompt()\n");
-    /*
+    dump("######## XXX PromptService.js:getPrompt()\n");
     let doc = this.getDocument();
     if (!doc) {
+      dump("XXX !doc");
       let fallback = this._getFallbackService();
       return fallback.QueryInterface(Ci.nsIPromptFactory).getPrompt(domWin, iid);
     }
 */
 
     let p = new Prompt(domWin, null/*doc*/);
+    //*/
     p.QueryInterface(iid);
     return p;
     //*/
@@ -121,7 +122,7 @@ PromptService.prototype = {
   },
   asyncPromptAuth: function() {
     return this.callProxy("asyncPromptAuth", arguments);
-  }
+  },
 };
 
 function Prompt(aDomWin, aDocument) {
@@ -182,7 +183,7 @@ Prompt.prototype = {
    */
   prompt: function prompt() {
     dump("######## PromptService.js:prompt()\n");
-    /*
+    
     if (gPromptService.inContentProcess)
       return gPromptService.callProxy("prompt", [null].concat(Array.prototype.slice.call(arguments)));
 
@@ -191,7 +192,7 @@ Prompt.prototype = {
       return this.nsIPrompt_prompt.apply(this, arguments);
     else
       return this.nsIAuthPrompt_prompt.apply(this, arguments);
-    //*/
+    //
   },
 
   promptUsernameAndPassword: function promptUsernameAndPassword() {
@@ -297,7 +298,8 @@ Prompt.prototype = {
       aTitle, aText, aPassword, aCheckMsg, aCheckState) {
     dump("######## PromptService.js:nsIPrompt_promptPassword()\n");
     aCheckState.value = true;
-    aPassword.value = "12345678";
+//    aPassword.value = "12345678";
+    aPassword.value = "yoshi2";
 
     return true;
     /*
@@ -611,6 +613,7 @@ let PromptUtils = {
 
     aUser.value = "";
     aPass.value = "12345678";
+//    aPass.value = "yoshi2";
     return ["saveButton" , {value: true}];
     /*
     let checkLabel = null;

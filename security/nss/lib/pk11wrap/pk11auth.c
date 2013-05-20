@@ -15,6 +15,8 @@
 
 #include "pkim.h" 
 
+#include <android/log.h>
+#define LOGI(args...)  __android_log_print(ANDROID_LOG_INFO, "pk11auth.c", args)
 
 /*************************************************************
  * local static and global data
@@ -56,6 +58,7 @@ pk11_CheckPassword(PK11SlotInfo *slot, CK_SESSION_HANDLE session,
     PRBool mustRetry;
     int retry = 0;
 
+    LOGI("XXX %s enter pw=%s", __func__, pw);
     if (slot->protectedAuthPath) {
 	len = 0;
 	pw = NULL;
@@ -74,6 +77,7 @@ pk11_CheckPassword(PK11SlotInfo *slot, CK_SESSION_HANDLE session,
 	slot->lastLoginCheck = 0;
 	mustRetry = PR_FALSE;
 	if (!alreadyLocked) PK11_ExitSlotMonitor(slot);
+        LOGI("XXX %s crv=%d", __func__, crv);
 	switch (crv) {
 	/* if we're already logged in, we're good to go */
 	case CKR_OK:
@@ -119,6 +123,7 @@ pk11_CheckPassword(PK11SlotInfo *slot, CK_SESSION_HANDLE session,
 	    rv = SECFailure; /* some failure we can't fix by retrying */
 	}
     } while (mustRetry);
+    LOGI("XXX %s exit rv=%d", __func__, rv);
     return rv;
 }
 
@@ -311,7 +316,9 @@ pk11_LoginStillRequired(PK11SlotInfo *slot, void *wincx)
  */
 SECStatus
 PK11_Authenticate(PK11SlotInfo *slot, PRBool loadCerts, void *wincx) {
+    LOGI("XXX %s enter", __func__);
     if (pk11_LoginStillRequired(slot,wincx)) {
+        LOGI("XXX %s enter login required", __func__);
 	return PK11_DoPassword(slot, slot->session, loadCerts, wincx,
 				PR_FALSE, PR_FALSE);
     }
@@ -513,7 +520,12 @@ PK11_ChangePW(PK11SlotInfo *slot, const char *oldpw, const char *newpw)
 static char *
 pk11_GetPassword(PK11SlotInfo *slot, PRBool retry, void * wincx)
 {
-    if (PK11_Global.getPass == NULL) return NULL;
+    LOGI("XXX %s enter getPass=%p", __func__, PK11_Global.getPass);
+    if (PK11_Global.getPass == NULL) {
+      LOGI("XXX %s exit 1", __func__);
+      return NULL;
+    }
+    LOGI("XXX %s exit", __func__);
     return (*PK11_Global.getPass)(slot, retry, wincx);
 }
 
@@ -547,12 +559,14 @@ SECStatus
 PK11_DoPassword(PK11SlotInfo *slot, CK_SESSION_HANDLE session,
 			PRBool loadCerts, void *wincx, PRBool alreadyLocked,
 			PRBool contextSpecific)
-{
+{ 
     SECStatus rv = SECFailure;
     char * password;
     PRBool attempt = PR_FALSE;
 
+    LOGI("XXX %s enter", __func__);
     if (PK11_NeedUserInit(slot)) {
+        LOGI("XXX %s need user init", __func__);
 	PORT_SetError(SEC_ERROR_IO);
 	return SECFailure;
     }
@@ -572,8 +586,10 @@ PK11_DoPassword(PK11SlotInfo *slot, CK_SESSION_HANDLE session,
     			(PK11_Global.verifyPass != NULL)) {
 	if (!PK11_Global.verifyPass(slot,wincx)) {
 	    PORT_SetError(SEC_ERROR_BAD_PASSWORD);
+            LOGI("XXX %s exit 1", __func__ );
 	    return SECFailure;
 	}
+            LOGI("XXX %s exit 2", __func__);
 	return SECSuccess;
     }
 
@@ -587,6 +603,7 @@ PK11_DoPassword(PK11SlotInfo *slot, CK_SESSION_HANDLE session,
      *	(3) the password was successful.
      */
     while ((password = pk11_GetPassword(slot, attempt, wincx)) != NULL) {
+        LOGI("XXX %s password=%s", __func__, password);
 	/* if the token has a protectedAuthPath, the application may have
          * already issued the C_Login as part of it's pk11_GetPassword call.
          * In this case the application will tell us what the results were in 
@@ -627,6 +644,7 @@ PK11_DoPassword(PK11SlotInfo *slot, CK_SESSION_HANDLE session,
 	                                      slot->nssToken);
 	}
     } else if (!attempt) PORT_SetError(SEC_ERROR_BAD_PASSWORD);
+    LOGI("XXX %s exit rv=%d", __func__, rv);
     return rv;
 }
 
@@ -664,6 +682,7 @@ PK11_GetMinimumPwdLength(PK11SlotInfo *slot)
 PRBool
 PK11_ProtectedAuthenticationPath(PK11SlotInfo *slot)
 {
+  LOGI("XXX %s enter return %d", __func__, slot->protectedAuthPath);
 	return slot->protectedAuthPath;
 }
 
@@ -674,6 +693,7 @@ PK11_ProtectedAuthenticationPath(PK11SlotInfo *slot)
  */
 PRBool PK11_NeedPWInitForSlot(PK11SlotInfo *slot)
 {
+    LOGI("XXX %s enter slot->needLogin=%d", __func__, slot->needLogin);
     if (slot->needLogin && PK11_NeedUserInit(slot)) {
 	return PR_TRUE;
     }

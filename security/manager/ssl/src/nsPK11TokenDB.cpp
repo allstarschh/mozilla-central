@@ -17,12 +17,18 @@
 extern PRLogModuleInfo* gPIPNSSLog;
 #endif
 
+#ifdef LOG
+#error "XXX"
+#endif
+#include <android/log.h>
+#define LOGI(args...)  __android_log_print(ANDROID_LOG_INFO, "PK11TokenDB.cpp", args)
 static NS_DEFINE_CID(kNSSComponentCID, NS_NSSCOMPONENT_CID);
 
 NS_IMPL_ISUPPORTS1(nsPK11Token, nsIPK11Token)
 
 nsPK11Token::nsPK11Token(PK11SlotInfo *slot)
 {
+//  LOGI("XXX %s enter flags=%d", __func__, slot->flags);
   nsNSSShutDownPreventionLock locker;
   if (isAlreadyShutDown())
     return;
@@ -38,6 +44,7 @@ nsPK11Token::nsPK11Token(PK11SlotInfo *slot)
 void  
 nsPK11Token::refreshTokenInfo()
 {
+//  LOGI("XXX %s enter flags=%d", __func__, mSlot->flags);
   mTokenName = NS_ConvertUTF8toUTF16(PK11_GetTokenName(mSlot));
 
   SECStatus srv;
@@ -83,6 +90,7 @@ nsPK11Token::refreshTokenInfo()
 
 nsPK11Token::~nsPK11Token()
 {
+  LOGI("XXX %s enter", __func__);
   nsNSSShutDownPreventionLock locker;
   if (isAlreadyShutDown())
     return;
@@ -93,11 +101,13 @@ nsPK11Token::~nsPK11Token()
 
 void nsPK11Token::virtualDestroyNSSReference()
 {
+  LOGI("XXX %s enter", __func__);
   destructorSafeDestroyNSSReference();
 }
 
 void nsPK11Token::destructorSafeDestroyNSSReference()
 {
+  LOGI("XXX %s enter", __func__);
   if (isAlreadyShutDown())
     return;
 
@@ -110,6 +120,7 @@ void nsPK11Token::destructorSafeDestroyNSSReference()
 /* readonly attribute wstring tokenName; */
 NS_IMETHODIMP nsPK11Token::GetTokenName(PRUnichar * *aTokenName)
 {
+  LOGI("XXX %s enter", __func__);
   // handle removals/insertions
   if (mSeries != PK11_GetSlotSeries(mSlot)) {
     refreshTokenInfo();
@@ -123,6 +134,7 @@ NS_IMETHODIMP nsPK11Token::GetTokenName(PRUnichar * *aTokenName)
 /* readonly attribute wstring tokenDesc; */
 NS_IMETHODIMP nsPK11Token::GetTokenLabel(PRUnichar **aTokLabel)
 {
+  LOGI("XXX %s enter", __func__);
   // handle removals/insertions
   if (mSeries != PK11_GetSlotSeries(mSlot)) {
     refreshTokenInfo();
@@ -135,6 +147,7 @@ NS_IMETHODIMP nsPK11Token::GetTokenLabel(PRUnichar **aTokLabel)
 /* readonly attribute wstring tokenManID; */
 NS_IMETHODIMP nsPK11Token::GetTokenManID(PRUnichar **aTokManID)
 {
+  LOGI("XXX %s enter", __func__);
   // handle removals/insertions
   if (mSeries != PK11_GetSlotSeries(mSlot)) {
     refreshTokenInfo();
@@ -147,6 +160,7 @@ NS_IMETHODIMP nsPK11Token::GetTokenManID(PRUnichar **aTokManID)
 /* readonly attribute wstring tokenHWVersion; */
 NS_IMETHODIMP nsPK11Token::GetTokenHWVersion(PRUnichar **aTokHWVersion)
 {
+  LOGI("XXX %s enter", __func__);
   // handle removals/insertions
   if (mSeries != PK11_GetSlotSeries(mSlot)) {
     refreshTokenInfo();
@@ -159,6 +173,7 @@ NS_IMETHODIMP nsPK11Token::GetTokenHWVersion(PRUnichar **aTokHWVersion)
 /* readonly attribute wstring tokenFWVersion; */
 NS_IMETHODIMP nsPK11Token::GetTokenFWVersion(PRUnichar **aTokFWVersion)
 {
+  LOGI("XXX %s enter", __func__);
   // handle removals/insertions
   if (mSeries != PK11_GetSlotSeries(mSlot)) {
     refreshTokenInfo();
@@ -171,6 +186,7 @@ NS_IMETHODIMP nsPK11Token::GetTokenFWVersion(PRUnichar **aTokFWVersion)
 /* readonly attribute wstring tokenSerialNumber; */
 NS_IMETHODIMP nsPK11Token::GetTokenSerialNumber(PRUnichar **aTokSerialNum)
 {
+  LOGI("XXX %s enter", __func__);
   // handle removals/insertions
   if (mSeries != PK11_GetSlotSeries(mSlot)) {
     refreshTokenInfo();
@@ -183,6 +199,7 @@ NS_IMETHODIMP nsPK11Token::GetTokenSerialNumber(PRUnichar **aTokSerialNum)
 /* boolean isLoggedIn (); */
 NS_IMETHODIMP nsPK11Token::IsLoggedIn(bool *_retval)
 {
+  LOGI("XXX %s enter", __func__);
   nsNSSShutDownPreventionLock locker;
   if (isAlreadyShutDown())
     return NS_ERROR_NOT_AVAILABLE;
@@ -198,27 +215,41 @@ NS_IMETHODIMP nsPK11Token::IsLoggedIn(bool *_retval)
 NS_IMETHODIMP 
 nsPK11Token::Login(bool force)
 {
+  LOGI("XXX %s enter", __func__);
   nsNSSShutDownPreventionLock locker;
-  if (isAlreadyShutDown())
+  if (isAlreadyShutDown()) {
+    LOGI("XXX %s exit 3", __func__);
     return NS_ERROR_NOT_AVAILABLE;
+  }
 
   nsresult rv;
   SECStatus srv;
   bool test;
   rv = this->NeedsLogin(&test);
-  if (NS_FAILED(rv)) return rv;
+  if (NS_FAILED(rv)) {
+    LOGI("XXX %s exit 3", __func__);
+    return rv;
+  }
   if (test && force) {
     rv = this->LogoutSimple();
-    if (NS_FAILED(rv)) return rv;
+    if (NS_FAILED(rv)) {
+      LOGI("XXX %s exit 2", __func__);
+      return rv;
+    }
   }
   rv = setPassword(mSlot, mUIContext);
-  if (NS_FAILED(rv)) return rv;
+  if (NS_FAILED(rv)) {
+    LOGI("XXX %s exit 1", __func__);
+    return rv;
+  }
   srv = PK11_Authenticate(mSlot, true, mUIContext);
+  LOGI("XXX %s exit srv=%d", __func__, srv);
   return (srv == SECSuccess) ? NS_OK : NS_ERROR_FAILURE;
 }
 
 NS_IMETHODIMP nsPK11Token::LogoutSimple()
 {
+//  LOGI("XXX %s enter flags=%d", __func__, mSlot->flags);
   nsNSSShutDownPreventionLock locker;
   if (isAlreadyShutDown())
     return NS_ERROR_NOT_AVAILABLE;
@@ -231,6 +262,7 @@ NS_IMETHODIMP nsPK11Token::LogoutSimple()
 
 NS_IMETHODIMP nsPK11Token::LogoutAndDropAuthenticatedResources()
 {
+  LOGI("XXX %s enter", __func__);
   nsresult rv = LogoutSimple();
 
   if (NS_FAILED(rv))
@@ -246,6 +278,7 @@ NS_IMETHODIMP nsPK11Token::LogoutAndDropAuthenticatedResources()
 /* void reset (); */
 NS_IMETHODIMP nsPK11Token::Reset()
 {
+  LOGI("XXX %s enter", __func__);
   nsNSSShutDownPreventionLock locker;
   if (isAlreadyShutDown())
     return NS_ERROR_NOT_AVAILABLE;
@@ -257,6 +290,7 @@ NS_IMETHODIMP nsPK11Token::Reset()
 /* readonly attribute long minimumPasswordLength; */
 NS_IMETHODIMP nsPK11Token::GetMinimumPasswordLength(int32_t *aMinimumPasswordLength)
 {
+  LOGI("XXX %s enter", __func__);
   nsNSSShutDownPreventionLock locker;
   if (isAlreadyShutDown())
     return NS_ERROR_NOT_AVAILABLE;
@@ -269,17 +303,20 @@ NS_IMETHODIMP nsPK11Token::GetMinimumPasswordLength(int32_t *aMinimumPasswordLen
 /* readonly attribute boolean needsUserInit; */
 NS_IMETHODIMP nsPK11Token::GetNeedsUserInit(bool *aNeedsUserInit)
 {
+  LOGI("XXX %s enter", __func__);
   nsNSSShutDownPreventionLock locker;
   if (isAlreadyShutDown())
     return NS_ERROR_NOT_AVAILABLE;
 
   *aNeedsUserInit = PK11_NeedUserInit(mSlot);
+  LOGI("XXX %s exit", __func__);
   return NS_OK;
 }
 
 /* boolean checkPassword (in wstring password); */
 NS_IMETHODIMP nsPK11Token::CheckPassword(const PRUnichar *password, bool *_retval)
 {
+  LOGI("XXX %s enter", __func__);
   nsNSSShutDownPreventionLock locker;
   if (isAlreadyShutDown())
     return NS_ERROR_NOT_AVAILABLE;
@@ -305,6 +342,7 @@ NS_IMETHODIMP nsPK11Token::CheckPassword(const PRUnichar *password, bool *_retva
 /* void initPassword (in wstring initialPassword); */
 NS_IMETHODIMP nsPK11Token::InitPassword(const PRUnichar *initialPassword)
 {
+  LOGI("XXX %s enter", __func__);
   nsNSSShutDownPreventionLock locker;
   if (isAlreadyShutDown())
     return NS_ERROR_NOT_AVAILABLE;
@@ -324,6 +362,7 @@ done:
 NS_IMETHODIMP 
 nsPK11Token::GetAskPasswordTimes(int32_t *rvAskTimes)
 {
+  LOGI("XXX %s enter", __func__);
   nsNSSShutDownPreventionLock locker;
   if (isAlreadyShutDown())
     return NS_ERROR_NOT_AVAILABLE;
@@ -338,6 +377,7 @@ nsPK11Token::GetAskPasswordTimes(int32_t *rvAskTimes)
 NS_IMETHODIMP 
 nsPK11Token::GetAskPasswordTimeout(int32_t *rvAskTimeout)
 {
+  LOGI("XXX %s enter", __func__);
   nsNSSShutDownPreventionLock locker;
   if (isAlreadyShutDown())
     return NS_ERROR_NOT_AVAILABLE;
@@ -355,6 +395,7 @@ NS_IMETHODIMP
 nsPK11Token::SetAskPasswordDefaults(const int32_t askTimes,
                                     const int32_t askTimeout)
 {
+  LOGI("XXX %s enter", __func__);
   nsNSSShutDownPreventionLock locker;
   if (isAlreadyShutDown())
     return NS_ERROR_NOT_AVAILABLE;
@@ -366,6 +407,7 @@ nsPK11Token::SetAskPasswordDefaults(const int32_t askTimes,
 /* void changePassword (in wstring oldPassword, in wstring newPassword); */
 NS_IMETHODIMP nsPK11Token::ChangePassword(const PRUnichar *oldPassword, const PRUnichar *newPassword)
 {
+  LOGI("XXX %s enter", __func__);
   nsNSSShutDownPreventionLock locker;
   if (isAlreadyShutDown())
     return NS_ERROR_NOT_AVAILABLE;
@@ -383,6 +425,7 @@ NS_IMETHODIMP nsPK11Token::ChangePassword(const PRUnichar *oldPassword, const PR
 /* boolean isHardwareToken (); */
 NS_IMETHODIMP nsPK11Token::IsHardwareToken(bool *_retval)
 {
+  LOGI("XXX %s enter", __func__);
   nsNSSShutDownPreventionLock locker;
   if (isAlreadyShutDown())
     return NS_ERROR_NOT_AVAILABLE;
@@ -397,6 +440,7 @@ NS_IMETHODIMP nsPK11Token::IsHardwareToken(bool *_retval)
 /* boolean needsLogin (); */
 NS_IMETHODIMP nsPK11Token::NeedsLogin(bool *_retval)
 {
+//  LOGI("XXX %s enter flags=%d", __func__, mSlot->flags);
   nsNSSShutDownPreventionLock locker;
   if (isAlreadyShutDown())
     return NS_ERROR_NOT_AVAILABLE;
@@ -411,6 +455,7 @@ NS_IMETHODIMP nsPK11Token::NeedsLogin(bool *_retval)
 /* boolean isFriendly (); */
 NS_IMETHODIMP nsPK11Token::IsFriendly(bool *_retval)
 {
+  LOGI("XXX %s enter", __func__);
   nsNSSShutDownPreventionLock locker;
   if (isAlreadyShutDown())
     return NS_ERROR_NOT_AVAILABLE;
@@ -440,6 +485,7 @@ nsPK11TokenDB::~nsPK11TokenDB()
 NS_IMETHODIMP nsPK11TokenDB::GetInternalKeyToken(nsIPK11Token **_retval)
 {
   nsNSSShutDownPreventionLock locker;
+  LOGI("XXX %s enter", __func__);
   nsresult rv = NS_OK;
   PK11SlotInfo *slot = 0;
   nsCOMPtr<nsIPK11Token> token;
@@ -460,6 +506,7 @@ done:
 NS_IMETHODIMP nsPK11TokenDB::
 FindTokenByName(const PRUnichar* tokenName, nsIPK11Token **_retval)
 {
+  LOGI("XXX %s enter", __func__);
   nsNSSShutDownPreventionLock locker;
   nsresult rv = NS_OK;
   PK11SlotInfo *slot = 0;
@@ -478,6 +525,7 @@ done:
 /* nsIEnumerator listTokens (); */
 NS_IMETHODIMP nsPK11TokenDB::ListTokens(nsIEnumerator* *_retval)
 {
+  LOGI("XXX %s enter", __func__);
   nsNSSShutDownPreventionLock locker;
   nsCOMPtr<nsISupportsArray> array;
   PK11SlotList *list = 0;

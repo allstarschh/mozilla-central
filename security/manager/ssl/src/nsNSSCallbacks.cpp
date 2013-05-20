@@ -30,6 +30,11 @@
 #include "ocsp.h"
 #include "nssb64.h"
 
+#ifdef LOG
+#error "XXX"
+#endif
+#include <android/log.h>
+#define LOGI(args...)  __android_log_print(ANDROID_LOG_INFO, "nsNSSCallbacks.cpp", args)
 using namespace mozilla;
 using namespace mozilla::psm;
 
@@ -752,6 +757,7 @@ void PK11PasswordPromptRunnable::RunOnTargetThread()
   bool value = false;
   nsCOMPtr<nsIPrompt> prompt;
 
+  LOGI("XXX %s enter", __func__);
   /* TODO: Retry should generate a different dialog message */
 /*
   if (retry)
@@ -768,10 +774,14 @@ void PK11PasswordPromptRunnable::RunOnTargetThread()
     NS_ASSERTION(prompt, "callbacks does not implement nsIPrompt");
   }
 
-  if (!prompt)
+  if (!prompt) {
+
+    LOGI("XXX %s exit 1", __func__);
     return;
+  }
 
   if (PK11_ProtectedAuthenticationPath(mSlot)) {
+    LOGI("XXX %s exit 2", __func__);
     mResult = ShowProtectedAuthPrompt(mSlot, mIR);
     return;
   }
@@ -779,8 +789,10 @@ void PK11PasswordPromptRunnable::RunOnTargetThread()
   nsAutoString promptString;
   nsCOMPtr<nsINSSComponent> nssComponent(do_GetService(kNSSComponentCID, &rv));
 
-  if (NS_FAILED(rv))
+  if (NS_FAILED(rv)) {
+    LOGI("XXX %s exit 3", __func__);
     return; 
+  }
 
   const PRUnichar* formatStrings[1] = { 
     ToNewUnicode(NS_ConvertUTF8toUTF16(PK11_GetTokenName(mSlot)))
@@ -790,8 +802,10 @@ void PK11PasswordPromptRunnable::RunOnTargetThread()
                                       promptString);
   nsMemory::Free(const_cast<PRUnichar*>(formatStrings[0]));
 
-  if (NS_FAILED(rv))
+  if (NS_FAILED(rv)) {
+    LOGI("XXX %s exit 4", __func__);
     return;
+  }
 
   {
     nsPSMUITracker tracker;
@@ -811,6 +825,7 @@ void PK11PasswordPromptRunnable::RunOnTargetThread()
     mResult = ToNewUTF8String(nsDependentString(password));
     NS_Free(password);
   }
+  LOGI("XXX %s exit ", __func__);
 }
 
 char*

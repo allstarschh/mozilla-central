@@ -24,6 +24,7 @@ const REMOTABLE_METHODS = {
 var gPromptService = null;
 
 function PromptService() {
+    dump("XXX nsPrompter.js android");
   gPromptService = this;
 }
 
@@ -35,6 +36,7 @@ PromptService.prototype = {
   /* ----------  nsIPromptFactory  ---------- */
   // XXX Copied from nsPrompter.js.
   getPrompt: function getPrompt(domWin, iid) {
+    dump("XXX PrompterService.getPrompt Android ");
     let doc = this.getDocument();
     if (!doc) {
       let fallback = this._getFallbackService();

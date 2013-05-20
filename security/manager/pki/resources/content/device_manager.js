@@ -202,6 +202,7 @@ function enableButtons()
     // so grab the token type
     var selected_token = selected_slot.getToken();
     if (selected_token != null) {
+      dump("XXX device_manager.js call needsUserInit");
       if (selected_token.needsLogin() || !(selected_token.needsUserInit)) {
         pw_toggle = "false";
         if(selected_token.needsLogin()) {
