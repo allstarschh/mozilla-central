@@ -629,7 +629,7 @@ pref("ui.mouse.radius.rightmm", 3);
 pref("ui.mouse.radius.bottommm", 2);
 
 // Disable native prompt
-pref("browser.prompt.allowNative", false);
+pref("browser.prompt.allowNative", true);
 
 // Minimum delay in milliseconds between network activity notifications (0 means
 // no notifications). The delay is the same for both download and upload, though

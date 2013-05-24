@@ -38,6 +38,7 @@ PromptService.prototype = {
   // XXX Copied from nsPrompter.js.
   getPrompt: function getPrompt(domWin, iid) {
     dump("######## XXX PromptService.js:getPrompt()\n");
+    /*
     let doc = this.getDocument();
     if (!doc) {
       dump("XXX !doc");
@@ -138,7 +139,7 @@ Prompt.prototype = {
 
   /* ---------- internal methods ---------- */
   commonPrompt: function commonPrompt(aTitle, aText, aButtons, aCheckMsg, aCheckState, aInputs) {
-    dump("######## PromptService.js:commonPrompt()\n");
+    dump("######## PromptService.js:commonPrompt() aTitle="+aTitle+" aText="+aText+" aButtons="+aButtons+" aCheckMsg="+aCheckMsg+" aCheckState="+aCheckState+" aInputs="+aInputs+"\n");
     /*
     if (aCheckMsg)
       aInputs.push({ type: "checkbox", label: PromptUtils.cleanUpLabel(aCheckMsg), checked: aCheckState.value });
@@ -196,7 +197,7 @@ Prompt.prototype = {
   },
 
   promptUsernameAndPassword: function promptUsernameAndPassword() {
-    dump("######## PromptService.js:commonPrompt()\n");
+    dump("######## PromptService.js:promptUsernameAndPassword()\n");
     // Both have 6 args, so use types.
     if (typeof arguments[2] == "object")
       return this.nsIPrompt_promptUsernameAndPassword.apply(this, arguments);
@@ -216,21 +217,25 @@ Prompt.prototype = {
   /* ----------  nsIPrompt  ---------- */
 
   alert: function alert(aTitle, aText) {
+    dump("XXX PromptService.js alert");
     this.commonPrompt(aTitle, aText, [ PromptUtils.getLocaleString("OK") ], "", { value: false }, []);
   },
 
   alertCheck: function alertCheck(aTitle, aText, aCheckMsg, aCheckState) {
+    dump("XXX PromptService.js alertCheck");
     let data = this.commonPrompt(aTitle, aText, [ PromptUtils.getLocaleString("OK") ], aCheckMsg, aCheckState, []);
     if (aCheckMsg)
       aCheckState.value = data.checkbox == "true";
   },
 
   confirm: function confirm(aTitle, aText) {
+    dump("XXX PromptService.js confirm");
     let data = this.commonPrompt(aTitle, aText, null, "", { value: false }, []);
     return (data.button == 0);
   },
 
   confirmCheck: function confirmCheck(aTitle, aText, aCheckMsg, aCheckState) {
+    dump("XXX PromptService.js confirmCheck");
     let data = this.commonPrompt(aTitle, aText, null, aCheckMsg, aCheckState, []);
     let ok = data.button == 0;
     if (aCheckMsg)
@@ -240,6 +245,7 @@ Prompt.prototype = {
 
   confirmEx: function confirmEx(aTitle, aText, aButtonFlags, aButton0,
                       aButton1, aButton2, aCheckMsg, aCheckState) {
+    dump("XXX PromptService.js confirmEx");
     let buttons = [];
     let titles = [aButton0, aButton1, aButton2];
     for (let i = 0; i < 3; i++) {
@@ -283,6 +289,7 @@ Prompt.prototype = {
   },
 
   nsIPrompt_prompt: function nsIPrompt_prompt(aTitle, aText, aValue, aCheckMsg, aCheckState) {
+    dump("XXX PromptService.js nsIPrompt_prompt");
     let inputs = [{ type: "textbox", value: aValue.value, autofocus: true }];
     let data = this.commonPrompt(aTitle, aText, null, aCheckMsg, aCheckState, inputs);
 
@@ -298,8 +305,8 @@ Prompt.prototype = {
       aTitle, aText, aPassword, aCheckMsg, aCheckState) {
     dump("######## PromptService.js:nsIPrompt_promptPassword()\n");
     aCheckState.value = true;
-//    aPassword.value = "12345678";
-    aPassword.value = "yoshi2";
+    aPassword.value = "12345678";
+//    aPassword.value = "yoshi2";
 
     return true;
     /*
@@ -317,6 +324,7 @@ Prompt.prototype = {
 
   nsIPrompt_promptUsernameAndPassword: function nsIPrompt_promptUsernameAndPassword(
       aTitle, aText, aUsername, aPassword, aCheckMsg, aCheckState) {
+    dump("XXX PromptService.js nsIPrompt_promptUsernameAndPassword");
     let inputs = [{ type: "textbox",  hint: PromptUtils.getLocaleString("username", "passwdmgr"), value: aUsername.value, autofocus: true },
                   { type: "password", hint: PromptUtils.getLocaleString("password", "passwdmgr"), value: aPassword.value }];
     let data = this.commonPrompt(aTitle, aText, null, aCheckMsg, aCheckState, inputs);
@@ -332,6 +340,7 @@ Prompt.prototype = {
   },
 
   select: function select(aTitle, aText, aCount, aSelectList, aOutSelection) {
+    dump("XXX PromptService.js select");
     let data = this.commonPrompt(aTitle, aText, [ PromptUtils.getLocaleString("OK") ], "",
                                 { value: false }, [{ type: "menulist",  values: aSelectList }]);
 

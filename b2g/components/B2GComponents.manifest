@@ -71,12 +71,12 @@ component {436ff8f9-0acc-4b11-8ec7-e293efba3141} FilePicker.js
 contract @mozilla.org/filepicker;1 {436ff8f9-0acc-4b11-8ec7-e293efba3141}
 
 # NSSDialogService.js
-component {cbc08081-49b6-4561-9c18-a7707a50bda1} NSSDialogService.js
-contract @mozilla.org/nsCertificateDialogs;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
-contract @mozilla.org/nsClientAuthDialogs;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
-contract @mozilla.org/nsTokenPasswordDialogs;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
+# component {cbc08081-49b6-4561-9c18-a7707a50bda1} NSSDialogService.js
+# contract @mozilla.org/nsCertificateDialogs;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
+# contract @mozilla.org/nsClientAuthDialogs;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
+# contract @mozilla.org/nsTokenPasswordDialogs;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
 # contract @mozilla.org/nsCertPickDialogs;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
-contract @mozilla.org/nsTokenDialogs;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
+# contract @mozilla.org/nsTokenDialogs;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
 # contract @mozilla.org/nsDOMCryptoDialogs;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
 # contract @mozilla.org/nsGeneratingKeypairInfoDialogs;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
 # contract @mozilla.org/nsSSLCertErrorDialog;1 {cbc08081-49b6-4561-9c18-a7707a50bda1}
