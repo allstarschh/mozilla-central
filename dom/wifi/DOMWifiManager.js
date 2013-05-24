@@ -299,17 +299,31 @@ DOMWifiManager.prototype = {
   },
 
   // nsIDOMWifiManager
-  importCaTest: function nsIDOMWifiManager_importCaTest() {
-    dump("####### DOMWifiManager.js:importCaTest()\n");
+  importCATest: function nsIDOMWifiManager_importCATest() {
+    dump("####### DOMWifiManager.js:importCATest()\n");
     var request = this.createRequest();
-    this._sendMessageForRequest("WifiManager:importCaTest", null, request);
+    this._sendMessageForRequest("WifiManager:importCATest", null, request);
     return;
   },
 
-  listCaTest: function nsIDOMWifiManager_listCaTest() {
-    dump("####### DOMWifiManager.js:listCaTest()\n");
+  listCATest: function nsIDOMWifiManager_listCATest() {
+    dump("####### DOMWifiManager.js:listCATest()\n");
     var request = this.createRequest();
-    this._sendMessageForRequest("WifiManager:listCaTest", null, request);
+    this._sendMessageForRequest("WifiManager:listCATest", null, request);
+    return;
+  },
+
+  listPK11TokenTest: function nsIDOMWifiManager_listPK11TokenTest() {
+    dump("####### DOMWifiManager.js:listPK11TokenTest()\n");
+    var request = this.createRequest();
+    this._sendMessageForRequest("WifiManager:listPK11TokenTest", null, request);
+    return;
+  },
+
+  listPK11ModuleTest: function nsIDOMWifiManager_listPK11ModuleTest() {
+    dump("####### DOMWifiManager.js:listPK11ModuleTest()\n");
+    var request = this.createRequest();
+    this._sendMessageForRequest("WifiManager:listPK11ModuleTest", null, request);
     return;
   },
 

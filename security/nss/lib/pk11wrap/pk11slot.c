@@ -1721,8 +1721,12 @@ PK11_NeedUserInit(PK11SlotInfo *slot)
 	rv = PK11_GetTokenInfo(slot, &info);
 	if (rv == SECSuccess) {
 	    slot->flags = info.flags;
-	}
+        LOGI("XXX %s enter update flags=%u, needUserInit=%d", __func__, slot->flags, ((slot->flags & CKF_USER_PIN_INITIALIZED) == 0));
+	} else {
+        LOGI("XXX GetTokenInfo error");
     }
+    }
+    LOGI("XXX %s exit  needUserInit=%d", __func__, ((slot->flags & CKF_USER_PIN_INITIALIZED) == 0));
     return (PRBool)((slot->flags & CKF_USER_PIN_INITIALIZED) == 0);
 }
 
@@ -1736,6 +1740,7 @@ static PK11SlotInfo *pk11InternalKeySlot = NULL;
 void
 pk11_SetInternalKeySlot(PK11SlotInfo *slot)
 {
+    LOGI("XXX %s enter", __func__);
    if (pk11InternalKeySlot) {
 	PK11_FreeSlot(pk11InternalKeySlot);
    }
@@ -1750,6 +1755,7 @@ pk11_SetInternalKeySlot(PK11SlotInfo *slot)
 void
 pk11_SetInternalKeySlotIfFirst(PK11SlotInfo *slot)
 {
+    LOGI("XXX %s enter", __func__);
    if (pk11InternalKeySlot) {
 	return;
    }
@@ -1762,6 +1768,7 @@ pk11_SetInternalKeySlotIfFirst(PK11SlotInfo *slot)
 PK11SlotInfo *
 pk11_SwapInternalKeySlot(PK11SlotInfo *slot)
 {
+    LOGI("XXX %s enter", __func__);
    PK11SlotInfo *swap = pk11InternalKeySlot;
 
    pk11InternalKeySlot = slot ? PK11_ReferenceSlot(slot) : NULL;
@@ -1775,6 +1782,7 @@ PK11SlotInfo *
 PK11_GetInternalKeySlot(void)
 {
     SECMODModule *mod;
+    LOGI("XXX %s enter pk11InternalKeySlot=%p", __func__, pk11InternalKeySlot);
 
     if (pk11InternalKeySlot) {
 	return PK11_ReferenceSlot(pk11InternalKeySlot);
@@ -1786,6 +1794,7 @@ PK11_GetInternalKeySlot(void)
 	PORT_SetError( SEC_ERROR_NO_MODULE );
 	return NULL;
     }
+    LOGI("XXX %s exit isFIPS=%d", __func__, mod->isFIPS);
     return PK11_ReferenceSlot(mod->isFIPS ? mod->slots[0] : mod->slots[1]);
 }
 

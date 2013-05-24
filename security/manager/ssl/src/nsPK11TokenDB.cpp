@@ -21,7 +21,7 @@ extern PRLogModuleInfo* gPIPNSSLog;
 #error "XXX"
 #endif
 #include <android/log.h>
-#define LOGI(args...)  __android_log_print(ANDROID_LOG_INFO, "PK11TokenDB.cpp", args)
+#define LOGI(args...)  __android_log_print(ANDROID_LOG_INFO, "nsPK11TokenDB.cpp", args)
 static NS_DEFINE_CID(kNSSComponentCID, NS_NSSCOMPONENT_CID);
 
 NS_IMPL_ISUPPORTS1(nsPK11Token, nsIPK11Token)

@@ -474,16 +474,20 @@ BrowserElementPromptFactory.prototype = {
   },
 
   _getNativePromptIfAllowed: function(win, iid, err) {
-    if (this._mayUseNativePrompt())
+    dump("XXX _getNativePromptIfAllowed");
+    if (this._mayUseNativePrompt()) {
+      dump("XXX _mayUseNativePrompt");
       return this._wrapped.getPrompt(win, iid);
+    }
     else {
+      dump("XXX not _mayUseNativePrompt");
       // Not allowed, throw an exception.
       throw err;
     }
   },
 
   getPrompt: function(win, iid) {
-    dump("XXX BrowserElementPromptService getPrompt ");
+    dump("XXX BrowserElementPromptService getPrompt win="+win+" iid="+iid);
     // It is possible for some object to get a prompt without passing
     // valid reference of window, like nsNSSComponent. In such case, we
     // should just fall back to the native prompt service
@@ -549,15 +553,19 @@ this.BrowserElementPromptService = {
   _initialized: false,
 
   _init: function() {
+    dump("XXX BrowserElementPromptService _init");
     if (this._initialized) {
       return;
     }
 
     // If the pref is disabled, do nothing except wait for the pref to change.
     if (!this._browserFramesPrefEnabled()) {
+        dump("XXX BrowserElementPromptService not _browserFramesPrefEnabled");
       var prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch);
       prefs.addObserver(BROWSER_FRAMES_ENABLED_PREF, this, /* ownsWeak = */ true);
       return;
+    } else {
+      dump("XXX BrowserElementPromptService _browserFramesPrefEnabled");
     }
 
     this._initialized = true;
@@ -657,4 +665,4 @@ this.BrowserElementPromptService = {
   }
 };
 
-//BrowserElementPromptService._init();
+BrowserElementPromptService._init();

@@ -41,7 +41,7 @@ interface nsIWifiScanResultsReady : nsISupports {
     void onfailure();
 };
 
-[scriptable, uuid(08dfefed-5c5d-4468-8c5d-2c65c24692d9)]
+[scriptable, uuid(09df4438-3a70-47c3-9910-be35714b99e7)]
 interface nsIWifi : nsISupports
 {
     /**
@@ -59,7 +59,7 @@ interface nsIWifi : nsISupports
     void getWifiScanResults(in nsIWifiScanResultsReady callback);
 };
 
-[scriptable, uuid(70cf3687-44e3-4440-b1ac-214f78bf0187)]
+[scriptable, uuid(52d462b5-90e2-4ef7-9511-7b7871cd7a85)]
 interface nsIDOMWifiManager : nsISupports
 {
     /**
@@ -71,8 +71,10 @@ interface nsIDOMWifiManager : nsISupports
      */
     nsIDOMDOMRequest getNetworks();
 
-    void importCaTest();
-    void listCaTest();
+    void importCATest();
+    void listCATest();
+    void listPK11TokenTest();
+    void listPK11ModuleTest();
 
     /**
      * Returns the list of networks known to the system that will be

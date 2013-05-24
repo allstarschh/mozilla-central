@@ -3,6 +3,7 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 "use strict";
+dump("XXX ######################## BrowserElementParent.jsm loaded\n");
 
 let Cu = Components.utils;
 let Ci = Components.interfaces;
