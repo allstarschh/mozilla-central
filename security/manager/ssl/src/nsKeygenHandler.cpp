@@ -367,7 +367,7 @@ GetSlotWithMechanism(uint32_t aMechanism,
 
     // Get the slot
     slotList = PK11_GetAllTokens(MapGenMechToAlgoMech(aMechanism), 
-                                true, true, m_ctx);
+            true, true, m_ctx);
     if (!slotList || !slotList->head) {
         rv = NS_ERROR_FAILURE;
         goto loser;
@@ -376,7 +376,7 @@ GetSlotWithMechanism(uint32_t aMechanism,
     if (!slotList->head->next) {
         /* only one slot available, just return it */
         *aSlot = slotList->head->slot;
-      } else {
+    } else {
         // Gerenate a list of slots and ask the user to choose //
         tmpSlot = slotList->head;
         while (tmpSlot) {
@@ -407,29 +407,29 @@ GetSlotWithMechanism(uint32_t aMechanism,
             }
         }
 
-		/* Throw up the token list dialog and get back the token */
-		rv = getNSSDialogs((void**)&dialogs,
-			               NS_GET_IID(nsITokenDialogs),
-                     NS_TOKENDIALOGS_CONTRACTID);
+        /* Throw up the token list dialog and get back the token */
+        rv = getNSSDialogs((void**)&dialogs,
+                NS_GET_IID(nsITokenDialogs),
+                NS_TOKENDIALOGS_CONTRACTID);
 
-		if (NS_FAILED(rv)) goto loser;
+        if (NS_FAILED(rv)) goto loser;
 
-    {
-      nsPSMUITracker tracker;
-      if (!tokenNameList || !*tokenNameList) {
-          rv = NS_ERROR_OUT_OF_MEMORY;
-      }
-      else if (tracker.isUIForbidden()) {
-        rv = NS_ERROR_NOT_AVAILABLE;
-      }
-      else {
-        rv = dialogs->ChooseToken(m_ctx, (const PRUnichar**)tokenNameList, numSlots, &unicodeTokenChosen, &canceled);
-      }
-    }
-		NS_RELEASE(dialogs);
-		if (NS_FAILED(rv)) goto loser;
+        {
+            nsPSMUITracker tracker;
+            if (!tokenNameList || !*tokenNameList) {
+                rv = NS_ERROR_OUT_OF_MEMORY;
+            }
+            else if (tracker.isUIForbidden()) {
+                rv = NS_ERROR_NOT_AVAILABLE;
+            }
+            else {
+                rv = dialogs->ChooseToken(m_ctx, (const PRUnichar**)tokenNameList, numSlots, &unicodeTokenChosen, &canceled);
+            }
+        }
+        NS_RELEASE(dialogs);
+        if (NS_FAILED(rv)) goto loser;
 
-		if (canceled) { rv = NS_ERROR_NOT_AVAILABLE; goto loser; }
+        if (canceled) { rv = NS_ERROR_NOT_AVAILABLE; goto loser; }
 
         // Get the slot //
         slotElement = PK11_GetFirstSafe(slotList);
@@ -446,18 +446,18 @@ GetSlotWithMechanism(uint32_t aMechanism,
             rv = NS_ERROR_FAILURE;
             goto loser;
         }
-      }
+    }
 
-      // Get a reference to the slot //
-      PK11_ReferenceSlot(*aSlot);
+    // Get a reference to the slot //
+    PK11_ReferenceSlot(*aSlot);
 loser:
-      if (slotList) {
-          PK11_FreeSlotList(slotList);
-      }
-      if (tokenNameList) {
-          NS_FREE_XPCOM_ALLOCATED_POINTER_ARRAY(numSlots, tokenNameList);
-      }
-      return rv;
+    if (slotList) {
+        PK11_FreeSlotList(slotList);
+    }
+    if (tokenNameList) {
+        NS_FREE_XPCOM_ALLOCATED_POINTER_ARRAY(numSlots, tokenNameList);
+    }
+    return rv;
 }
 
 nsresult

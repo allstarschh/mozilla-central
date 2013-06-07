@@ -2092,41 +2092,41 @@ PK11_TraverseCertsInSlot(PK11SlotInfo *slot,
     nssTokenSearchType tokenOnly = nssTokenSearchType_TokenOnly;
     tok = PK11Slot_GetNSSToken(slot);
     if (!nssToken_IsPresent(tok)) {
-	return SECSuccess;
+        return SECSuccess;
     }
     collection = nssCertificateCollection_Create(td, NULL);
     if (!collection) {
-	return SECFailure;
+        return SECFailure;
     }
     certList = nssList_Create(NULL, PR_FALSE);
     if (!certList) {
-	nssPKIObjectCollection_Destroy(collection);
-	return SECFailure;
+        nssPKIObjectCollection_Destroy(collection);
+        return SECFailure;
     }
     (void)nssTrustDomain_GetCertsFromCache(td, certList);
     transfer_token_certs_to_collection(certList, tok, collection);
     instances = nssToken_FindObjects(tok, NULL, CKO_CERTIFICATE,
-                                     tokenOnly, 0, &nssrv);
+            tokenOnly, 0, &nssrv);
     nssPKIObjectCollection_AddInstances(collection, instances, 0);
     nss_ZFreeIf(instances);
     nssList_Destroy(certList);
     certs = nssPKIObjectCollection_GetCertificates(collection,
-                                                   NULL, 0, NULL);
+            NULL, 0, NULL);
     nssPKIObjectCollection_Destroy(collection);
     if (certs) {
-	CERTCertificate *oldie;
-	NSSCertificate **cp;
-	for (cp = certs; *cp; cp++) {
-	    oldie = STAN_GetCERTCertificate(*cp);
-	    if (!oldie) {
-		continue;
-	    }
-	    if ((*callback)(oldie, arg) != SECSuccess) {
-		nssrv = PR_FAILURE;
-		break;
-	    }
-	}
-	nssCertificateArray_Destroy(certs);
+        CERTCertificate *oldie;
+        NSSCertificate **cp;
+        for (cp = certs; *cp; cp++) {
+            oldie = STAN_GetCERTCertificate(*cp);
+            if (!oldie) {
+                continue;
+            }
+            if ((*callback)(oldie, arg) != SECSuccess) {
+                nssrv = PR_FAILURE;
+                break;
+            }
+        }
+        nssCertificateArray_Destroy(certs);
     }
     return (nssrv == PR_SUCCESS) ? SECSuccess : SECFailure;
 }

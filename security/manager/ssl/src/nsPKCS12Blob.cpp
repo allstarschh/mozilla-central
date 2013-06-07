@@ -76,6 +76,7 @@ nsPKCS12Blob::~nsPKCS12Blob()
 nsresult
 nsPKCS12Blob::SetToken(nsIPK11Token *token)
 {
+ LOGI("XXX %s enter token=%p", __func__, token);
  nsNSSShutDownPreventionLock locker;
  nsresult rv = NS_OK;
  if (token) {
@@ -89,6 +90,7 @@ nsPKCS12Blob::SetToken(nsIPK11Token *token)
      mToken = new nsPK11Token(slot);
      PK11_FreeSlot(slot);
    }
+   LOGI("XXX %s tokenname=%s", __func__, PK11_GetTokenName(slot));
  }
  mTokenSet = true;
  return rv;

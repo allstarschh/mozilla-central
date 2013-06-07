@@ -2454,7 +2454,7 @@ WifiWorker.prototype = {
   },
 
   initialized: false,
-  importCA: function importCA(cafile) {
+  importCA: function importCA(cafile, password) {
     dump("importCA");
     if (!this.initialized) {
       this.initialized = true;
@@ -2473,7 +2473,7 @@ WifiWorker.prototype = {
 
     try {
       //this.certDB.importPKCS12File(null, cafile);
-      this.certDB.importPKCS12FileWithPassword(null, cafile, "12345678");
+      this.certDB.importPKCS12FileWithPassword(null, cafile, password);
     } catch (e) {
       dump("Import CA Failed: " + e.message);
     }
@@ -2482,31 +2482,31 @@ WifiWorker.prototype = {
   listCA: function listCA() {
     dump("List CA");
 
-    var certType = [];
+    let certType = [];
     certType[0] = "Unknown";
     certType[1] = "CA";
     certType[2] = "User";
     certType[4] = "Email";
     certType[8] = "Server";
 
-    var selectedCerts = [];
-    var certDB2 = Cc["@mozilla.org/security/x509certdb;1"].getService(Ci.nsIX509CertDB2);
-    var certList = certDB2.getCerts();
-    var certListEnum = certList.getEnumerator();
-    var certInfoList = [];
-    var certNicknameList = [];
-    var certDetailList = [];
+    let selectedCerts = [];
+    let certDB2 = Cc["@mozilla.org/security/x509certdb;1"].getService(Ci.nsIX509CertDB2);
+    let certList = certDB2.getCerts();
+    let certListEnum = certList.getEnumerator();
+    let certInfoList = [];
+    let certNicknameList = [];
+    let certDetailList = [];
 
     while (certListEnum.hasMoreElements()) {
-      var certInfo = certListEnum.getNext().QueryInterface(Ci.nsIX509Cert3);
+      let certInfo = certListEnum.getNext().QueryInterface(Ci.nsIX509Cert3);
       certInfoList.push(certInfo);
 
       // Ignore built in CA
       if (certInfo.nickname.indexOf("Builtin Object Token:") === 0)
         continue;
 
-      var certNickname = certInfo.nickname + "(" + certType[certInfo.certType] + ")";
-      var certDetail = "subjectName:" + certInfo.subjectName;
+      let certNickname = certInfo.nickname + "(" + certType[certInfo.certType] + ")";
+      let certDetail = "subjectName:" + certInfo.subjectName;
       dump("<CA List> Cert: " + certNickname + ", " + certDetail);
       let props = ["nickname", "sha1Fingerprint", "md5Fingerprint", "dbKey"];
       for (let i = 0; i < props.length; i++) {
@@ -2514,7 +2514,6 @@ WifiWorker.prototype = {
       }
       certNicknameList.push(certNickname);
       certDetailList.push(certDetail);
-      certListLength++;
       selectedCerts.push(certInfo);
     }
 
@@ -2604,17 +2603,25 @@ WifiWorker.prototype = {
     dump("listPK11Module exit");
   },
 
-  p12File : ["/mnt/sdcard/chucklee_12345678.pfx",
-             "/mnt/sdcard/yoshi.p12"],
-  p12FileIndex: 0,
+  p12Files : [{file: "/mnt/sdcard/chucklee_12345678.pfx",
+               password: "12345678"},
+              {file: "/mnt/sdcard/yoshi.p12",
+               password: "12345678"},
+              {file: "/mnt/sdcard/platform.p12",
+               password: "platform"},
+              {file: "/mnt/sdcard/testkey.p12",
+               password: "testkey"},
+             ],
+  p12FilesIndex: 0,
 
   importCATest: function importCATest(msg) {
-    dump("importCATest Load Local File " + this.p12File[this.p12FileIndex]);
-    var pfxFile = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
-    pfxFile.initWithPath(this.p12File[this.p12FileIndex]);
-    this.p12FileIndex ++;
-    this.p12FileIndex %= this.p12File.length;
-    this.importCA(pfxFile);
+    dump("importCATest Load Local File " + this.p12Files[this.p12FilesIndex].file+" password="+this.p12Files[this.p12FilesIndex].password);
+    let pfxFile = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
+    let password = this.p12Files[this.p12FilesIndex].password;
+    pfxFile.initWithPath(this.p12Files[this.p12FilesIndex].file);
+    this.p12FilesIndex ++;
+    this.p12FilesIndex %= this.p12Files.length;
+    this.importCA(pfxFile, password);
   },
 
   listCATest: function listCATest(msg) {

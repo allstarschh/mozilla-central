@@ -1086,28 +1086,28 @@ nssPKIObjectCollection_GetCertificates (
     PRUint32 rvSize;
     PRBool allocated = PR_FALSE;
     if (collection->size == 0) {
-	return (NSSCertificate **)NULL;
+        return (NSSCertificate **)NULL;
     }
     if (maximumOpt == 0) {
-	rvSize = collection->size;
+        rvSize = collection->size;
     } else {
-	rvSize = PR_MIN(collection->size, maximumOpt);
+        rvSize = PR_MIN(collection->size, maximumOpt);
     }
     if (!rvOpt) {
-	rvOpt = nss_ZNEWARRAY(arenaOpt, NSSCertificate *, rvSize + 1);
-	if (!rvOpt) {
-	    return (NSSCertificate **)NULL;
-	}
-	allocated = PR_TRUE;
+        rvOpt = nss_ZNEWARRAY(arenaOpt, NSSCertificate *, rvSize + 1);
+        if (!rvOpt) {
+            return (NSSCertificate **)NULL;
+        }
+        allocated = PR_TRUE;
     }
     status = nssPKIObjectCollection_GetObjects(collection, 
-                                               (nssPKIObject **)rvOpt, 
-                                               rvSize);
+            (nssPKIObject **)rvOpt, 
+            rvSize);
     if (status != PR_SUCCESS) {
-	if (allocated) {
-	    nss_ZFreeIf(rvOpt);
-	}
-	return (NSSCertificate **)NULL;
+        if (allocated) {
+            nss_ZFreeIf(rvOpt);
+        }
+        return (NSSCertificate **)NULL;
     }
     return rvOpt;
 }

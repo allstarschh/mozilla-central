@@ -2164,28 +2164,31 @@ sec_pkcs12_validate_cert_nickname(sec_PKCS12SafeBag *cert,
 				SEC_PKCS12NicknameCollisionCallback nicknameCb,
 				CERTCertificate *leafCert)
 {
-    LOGI("XXX %s enter", __func__);
+    LOGI("XXX %s enter!!!!", __func__);
     SECItem *certNickname, *existingDNNick;
     PRBool setNickname = PR_FALSE, cancel = PR_FALSE;
     SECItem *newNickname = NULL;
 
     if(!cert || !cert->hasKey) {
-	PORT_SetError(SEC_ERROR_INVALID_ARGS);
-	return;
+        PORT_SetError(SEC_ERROR_INVALID_ARGS);
+        LOGI("XXX %s exit 1", __func__);
+        return;
     }
 
     if(!nicknameCb) {
-	cert->problem = PR_TRUE;
-	cert->error = SEC_ERROR_INVALID_ARGS;
-	PORT_SetError(SEC_ERROR_INVALID_ARGS);
-	return;
+        cert->problem = PR_TRUE;
+        cert->error = SEC_ERROR_INVALID_ARGS;
+        PORT_SetError(SEC_ERROR_INVALID_ARGS);
+        LOGI("XXX %s exit 2", __func__);
+        return;
     }
 
     if(cert->hasKey && !key) {
-	cert->problem = PR_TRUE;
-	cert->error = SEC_ERROR_INVALID_ARGS;
-	PORT_SetError(SEC_ERROR_INVALID_ARGS);
-	return;
+        cert->problem = PR_TRUE;
+        cert->error = SEC_ERROR_INVALID_ARGS;
+        PORT_SetError(SEC_ERROR_INVALID_ARGS);
+        LOGI("XXX %s exit 2", __func__);
+        return;
     }
 
     certNickname = sec_pkcs12_get_nickname_for_cert(cert, key);
@@ -2193,16 +2196,18 @@ sec_pkcs12_validate_cert_nickname(sec_PKCS12SafeBag *cert,
 
     /* nickname is already used w/ this dn, so it is safe to return */
     if(certNickname && existingDNNick &&
-		SECITEM_CompareItem(certNickname, existingDNNick) == SECEqual) {
-	goto loser;
+            SECITEM_CompareItem(certNickname, existingDNNick) == SECEqual) {
+        LOGI("XXX %s goto loser 1", __func__);
+        goto loser;
     }
 
     /* nickname not set in pkcs 12 bags, but a nick is already used for
      * this dn.  set the nicks in the p12 bags and finish.
      */
     if(existingDNNick) {
-	sec_pkcs12_set_nickname_for_cert(cert, key, existingDNNick);
-	goto loser;
+        LOGI("XXX %s goto loser 2", __func__);
+        sec_pkcs12_set_nickname_for_cert(cert, key, existingDNNick);
+        goto loser;
     }
 
     /* at this point, we have a certificate for which the DN is not located
@@ -2223,53 +2228,55 @@ sec_pkcs12_validate_cert_nickname(sec_PKCS12SafeBag *cert,
      */
     setNickname = PR_FALSE;
     while(1) {
-	/* we will use the nickname so long as no other certs have the
-	 * same nickname.  and the nickname is not NULL.
-	 */		
-	if (certNickname && certNickname->data &&
-	    !sec_pkcs12_certs_for_nickname_exist(certNickname, cert->slot)) {
-	    if (setNickname) {
-		sec_pkcs12_set_nickname_for_cert(cert, key, certNickname);
-	    }
-	    break;
-	}
+        /* we will use the nickname so long as no other certs have the
+         * same nickname.  and the nickname is not NULL.
+         */		
+        if (certNickname && certNickname->data &&
+                !sec_pkcs12_certs_for_nickname_exist(certNickname, cert->slot)) {
+            if (setNickname) {
+                sec_pkcs12_set_nickname_for_cert(cert, key, certNickname);
+            }
+            LOGI("XXX %s break 1", __func__);
+            break;
+        }
 
-	setNickname = PR_FALSE;
-	newNickname = (*nicknameCb)(certNickname, &cancel, leafCert);
-	if(cancel) {
-	    cert->problem = PR_TRUE;
-	    cert->error = SEC_ERROR_USER_CANCELLED;
-	    break;
-	}
+        setNickname = PR_FALSE;
+        newNickname = (*nicknameCb)(certNickname, &cancel, leafCert);
+        if(cancel) {
+            cert->problem = PR_TRUE;
+            cert->error = SEC_ERROR_USER_CANCELLED;
+            break;
+        }
 
-	if(!newNickname) {
-	    cert->problem = PR_TRUE;
-	    cert->error = PORT_GetError();
-	    break;
-	}
+        if(!newNickname) {
+            cert->problem = PR_TRUE;
+            cert->error = PORT_GetError();
+            break;
+        }
 
-	/* at this point we have a new nickname, if we have an existing
-	 * certNickname, we need to free it and assign the new nickname
-	 * to it to avoid a memory leak.  happy?
-	 */
-	if(certNickname) {
-	    SECITEM_ZfreeItem(certNickname, PR_TRUE);
-	    certNickname = NULL;
-	}
+        /* at this point we have a new nickname, if we have an existing
+         * certNickname, we need to free it and assign the new nickname
+         * to it to avoid a memory leak.  happy?
+         */
+        if(certNickname) {
+            SECITEM_ZfreeItem(certNickname, PR_TRUE);
+            certNickname = NULL;
+        }
 
-	certNickname = newNickname;
-	setNickname = PR_TRUE;
-	/* go back and recheck the new nickname */
+        certNickname = newNickname;
+        setNickname = PR_TRUE;
+        /* go back and recheck the new nickname */
     }
 
 loser:
     if(certNickname) {
-	SECITEM_ZfreeItem(certNickname, PR_TRUE);
+        SECITEM_ZfreeItem(certNickname, PR_TRUE);
     }
 
     if(existingDNNick) {
-	SECITEM_ZfreeItem(existingDNNick, PR_TRUE);
+        SECITEM_ZfreeItem(existingDNNick, PR_TRUE);
     }
+    LOGI("XXX %s exit", __func__);
 }
 
 static void 
@@ -2277,29 +2284,29 @@ sec_pkcs12_validate_cert(sec_PKCS12SafeBag *cert,
 			 sec_PKCS12SafeBag *key,
 			 SEC_PKCS12NicknameCollisionCallback nicknameCb)
 {
-    LOGI("XXX %s enter", __func__);
+    LOGI("XXX %s enter!!", __func__);
     CERTCertificate *leafCert;
 
     if(!cert) {
-	PORT_SetError(SEC_ERROR_INVALID_ARGS);
-	return;
+        PORT_SetError(SEC_ERROR_INVALID_ARGS);
+        return;
     }
-    
+
     cert->validated = PR_TRUE;
 
     if(!nicknameCb) {
-	cert->noInstall = PR_TRUE;
-	cert->problem = PR_TRUE;
-	cert->error   = SEC_ERROR_INVALID_ARGS;
-	PORT_SetError(SEC_ERROR_INVALID_ARGS);
-	return;
+        cert->noInstall = PR_TRUE;
+        cert->problem = PR_TRUE;
+        cert->error   = SEC_ERROR_INVALID_ARGS;
+        PORT_SetError(SEC_ERROR_INVALID_ARGS);
+        return;
     }
 
     if(!cert->safeBagContent.certBag) {
-	cert->noInstall = PR_TRUE;
-	cert->problem = PR_TRUE;
-	cert->error = SEC_ERROR_PKCS12_CORRUPT_PFX_STRUCTURE;
-	return;
+        cert->noInstall = PR_TRUE;
+        cert->problem = PR_TRUE;
+        cert->error = SEC_ERROR_PKCS12_CORRUPT_PFX_STRUCTURE;
+        return;
     }
 
     cert->noInstall = PR_FALSE;
@@ -2308,12 +2315,12 @@ sec_pkcs12_validate_cert(sec_PKCS12SafeBag *cert,
     cert->error = 0;
 
     leafCert = CERT_DecodeDERCertificate(
-	 &cert->safeBagContent.certBag->value.x509Cert, PR_FALSE, NULL);
+            &cert->safeBagContent.certBag->value.x509Cert, PR_FALSE, NULL);
     if(!leafCert) {
-	cert->noInstall = PR_TRUE;
-	cert->problem = PR_TRUE;
-	cert->error = PORT_GetError();
-	return;
+        cert->noInstall = PR_TRUE;
+        cert->problem = PR_TRUE;
+        cert->error = PORT_GetError();
+        return;
     }
 
     sec_pkcs12_validate_cert_nickname(cert, key, nicknameCb, leafCert);
@@ -2677,14 +2684,14 @@ sec_pkcs12_validate_bags(sec_PKCS12SafeBag **safeBags,
     sec_PKCS12SafeBag **keyList;
     int i;
 
-    LOGI("XXX %s enter", __func__);
+    LOGI("XXX %s enter!!", __func__);
     if(!safeBags || !nicknameCb) {
-	PORT_SetError(SEC_ERROR_INVALID_ARGS);
-	return SECFailure;
+        PORT_SetError(SEC_ERROR_INVALID_ARGS);
+        return SECFailure;
     }
 
     if(!safeBags[0]) {
-	return SECSuccess;
+        return SECSuccess;
     }
 
     /* First pass.  Find all the key bags.  
@@ -2692,69 +2699,69 @@ sec_pkcs12_validate_bags(sec_PKCS12SafeBag **safeBags,
      */
     keyList = sec_pkcs12_get_key_bags(safeBags);
     if(keyList) {
-	for (i = 0; keyList[i]; ++i) {
-	    sec_PKCS12SafeBag *key = keyList[i];
-	    sec_PKCS12SafeBag **certList = 
-			    sec_pkcs12_find_certs_for_key(safeBags, key);
+        for (i = 0; keyList[i]; ++i) {
+            sec_PKCS12SafeBag *key = keyList[i];
+            sec_PKCS12SafeBag **certList = 
+                sec_pkcs12_find_certs_for_key(safeBags, key);
 
-	    if(certList) {
-		int j;
+            if(certList) {
+                int j;
 
-		if(SECOID_FindOIDTag(&(key->safeBagType)) == 
-					SEC_OID_PKCS12_V1_KEY_BAG_ID) {
-		    /* if it is an unencrypted private key then make sure
-		     * the attributes are propageted to the appropriate 
-		     * level 
-		     */
-		    if(sec_pkcs12_get_key_info(key) != SECSuccess) {
-			return SECFailure;
-		    }
-		}
-	
-		sec_pkcs12_validate_key_by_cert(certList[0], key, wincx);
-		for (j = 0; certList[j]; ++j) {
-		    sec_PKCS12SafeBag *cert = certList[j];
-		    cert->hasKey = PR_TRUE;
-		    if(key->problem) {
-			cert->problem = PR_TRUE;
-			cert->error   = key->error;
-			continue;
-		    } 
+                if(SECOID_FindOIDTag(&(key->safeBagType)) == 
+                        SEC_OID_PKCS12_V1_KEY_BAG_ID) {
+                    /* if it is an unencrypted private key then make sure
+                     * the attributes are propageted to the appropriate 
+                     * level 
+                     */
+                    if(sec_pkcs12_get_key_info(key) != SECSuccess) {
+                        return SECFailure;
+                    }
+                }
+
+                sec_pkcs12_validate_key_by_cert(certList[0], key, wincx);
+                for (j = 0; certList[j]; ++j) {
+                    sec_PKCS12SafeBag *cert = certList[j];
+                    cert->hasKey = PR_TRUE;
+                    if(key->problem) {
+                        cert->problem = PR_TRUE;
+                        cert->error   = key->error;
+                        continue;
+                    } 
                     LOGI("XXX %s 1", __func__);
-		    sec_pkcs12_validate_cert(cert, key, nicknameCb);
-		    if(cert->problem) {
-			key->problem = cert->problem;
-			key->error   = cert->error;
-		    }
-		}
-	    }
-	}
+                    sec_pkcs12_validate_cert(cert, key, nicknameCb);
+                    if(cert->problem) {
+                        key->problem = cert->problem;
+                        key->error   = cert->error;
+                    }
+                }
+            }
+        }
     }
 
     /* Now take a second pass over the safebags and mark for installation any 
      * certs that were neither installed nor disqualified by the first pass.
      */
     for (i = 0; safeBags[i]; ++i) {
-	sec_PKCS12SafeBag *bag = safeBags[i];
+        sec_PKCS12SafeBag *bag = safeBags[i];
 
-	if(!bag->validated) {
-	    SECOidTag bagType = SECOID_FindOIDTag(&bag->safeBagType);
+        if(!bag->validated) {
+            SECOidTag bagType = SECOID_FindOIDTag(&bag->safeBagType);
 
-	    switch(bagType) {
-	    case SEC_OID_PKCS12_V1_CERT_BAG_ID:
-                LOGI("XXX %s 2", __func__);
-		sec_pkcs12_validate_cert(bag, NULL, nicknameCb);
-		break;
-	    case SEC_OID_PKCS12_V1_KEY_BAG_ID:
-	    case SEC_OID_PKCS12_V1_PKCS8_SHROUDED_KEY_BAG_ID:
-		bag->noInstall = PR_TRUE;
-		bag->problem = PR_TRUE;	
-		bag->error = SEC_ERROR_PKCS12_UNABLE_TO_IMPORT_KEY;
-		break;
-	    default:
-		bag->noInstall = PR_TRUE;
-	    }
-	}
+            switch(bagType) {
+                case SEC_OID_PKCS12_V1_CERT_BAG_ID:
+                    LOGI("XXX %s 2", __func__);
+                    sec_pkcs12_validate_cert(bag, NULL, nicknameCb);
+                    break;
+                case SEC_OID_PKCS12_V1_KEY_BAG_ID:
+                case SEC_OID_PKCS12_V1_PKCS8_SHROUDED_KEY_BAG_ID:
+                    bag->noInstall = PR_TRUE;
+                    bag->problem = PR_TRUE;	
+                    bag->error = SEC_ERROR_PKCS12_UNABLE_TO_IMPORT_KEY;
+                    break;
+                default:
+                    bag->noInstall = PR_TRUE;
+            }
+        }
     }
 
     return SECSuccess;

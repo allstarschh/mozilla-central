@@ -752,23 +752,23 @@ PrintKey(PRFileDesc *out, const char *nickName, int count,
     pwarg = NULL;
     ckaID = PK11_GetLowLevelKeyIDForPrivateKey(key);
     if (!ckaID) {
-	strcpy(ckaIDbuf, "(no CKA_ID)");
+        strcpy(ckaIDbuf, "(no CKA_ID)");
     } else if (ItemIsPrintableASCII(ckaID)) {
-	int len = PR_MIN(MAX_CKA_ID_STR_LEN, ckaID->len);
-	ckaIDbuf[0] = '"';
-	memcpy(ckaIDbuf + 1, ckaID->data, len);
-	ckaIDbuf[1 + len] = '"';
-	ckaIDbuf[2 + len] = '\0';
+        int len = PR_MIN(MAX_CKA_ID_STR_LEN, ckaID->len);
+        ckaIDbuf[0] = '"';
+        memcpy(ckaIDbuf + 1, ckaID->data, len);
+        ckaIDbuf[1 + len] = '"';
+        ckaIDbuf[2 + len] = '\0';
     } else {
-    	/* print ckaid in hex */
-	SECItem idItem = *ckaID;
-	if (idItem.len > MAX_CKA_ID_BIN_LEN)
-	    idItem.len = MAX_CKA_ID_BIN_LEN;
+        /* print ckaid in hex */
+        SECItem idItem = *ckaID;
+        if (idItem.len > MAX_CKA_ID_BIN_LEN)
+            idItem.len = MAX_CKA_ID_BIN_LEN;
         SECItemToHex(&idItem, ckaIDbuf);
     }
 
     PR_fprintf(out, "<%2d> %-8.8s %-42.42s %s\n", count, 
-               keyTypeName[key->keyType], ckaIDbuf, nickName);
+            keyTypeName[key->keyType], ckaIDbuf, nickName);
     SECITEM_ZfreeItem(ckaID, PR_TRUE);
 
     return SECSuccess;
@@ -787,64 +787,64 @@ ListKeysInSlot(PK11SlotInfo *slot, const char *nickName, KeyType keyType,
         SECStatus rv = PK11_Authenticate(slot, PR_TRUE, pwarg);
         if (rv != SECSuccess) {
             SECU_PrintError(progName, "could not authenticate to token %s.",
-                            PK11_GetTokenName(slot));
+                    PK11_GetTokenName(slot));
             return SECFailure;
         }
     }
 
     if (nickName && nickName[0]) 
-	list = PK11_ListPrivKeysInSlot(slot, (char *)nickName, pwarg);
+        list = PK11_ListPrivKeysInSlot(slot, (char *)nickName, pwarg);
     else
-	list = PK11_ListPrivateKeysInSlot(slot);
+        list = PK11_ListPrivateKeysInSlot(slot);
     if (list == NULL) {
-	SECU_PrintError(progName, "problem listing keys");
-	return SECFailure;
+        SECU_PrintError(progName, "problem listing keys");
+        return SECFailure;
     }
     for (node=PRIVKEY_LIST_HEAD(list); 
-             !PRIVKEY_LIST_END(node,list);
-	 node=PRIVKEY_LIST_NEXT(node)) {
-	char * keyName;
-	static const char orphan[] = { "(orphan)" };
+            !PRIVKEY_LIST_END(node,list);
+            node=PRIVKEY_LIST_NEXT(node)) {
+        char * keyName;
+        static const char orphan[] = { "(orphan)" };
 
-	if (keyType != nullKey && keyType != node->key->keyType)
-	    continue;
+        if (keyType != nullKey && keyType != node->key->keyType)
+            continue;
         keyName = PK11_GetPrivateKeyNickname(node->key);
-	if (!keyName || !keyName[0]) {
-	    /* Try extra hard to find nicknames for keys that lack them. */
-	    CERTCertificate * cert;
-	    PORT_Free((void *)keyName);
-	    keyName = NULL;
-	    cert = PK11_GetCertFromPrivateKey(node->key);
-	    if (cert) {
-		if (cert->nickname && cert->nickname[0]) {
-		    keyName = PORT_Strdup(cert->nickname);
-		} else if (cert->emailAddr && cert->emailAddr[0]) {
-		    keyName = PORT_Strdup(cert->emailAddr);
-		}
-		CERT_DestroyCertificate(cert);
-	    }
-	}
-	if (nickName) {
-	    if (!keyName || PL_strcmp(keyName,nickName)) {
-		/* PKCS#11 module returned unwanted keys */
-	        PORT_Free((void *)keyName);
-		continue;
-	    }
-	}
-	if (!keyName)
-	    keyName = (char *)orphan;
+        if (!keyName || !keyName[0]) {
+            /* Try extra hard to find nicknames for keys that lack them. */
+            CERTCertificate * cert;
+            PORT_Free((void *)keyName);
+            keyName = NULL;
+            cert = PK11_GetCertFromPrivateKey(node->key);
+            if (cert) {
+                if (cert->nickname && cert->nickname[0]) {
+                    keyName = PORT_Strdup(cert->nickname);
+                } else if (cert->emailAddr && cert->emailAddr[0]) {
+                    keyName = PORT_Strdup(cert->emailAddr);
+                }
+                CERT_DestroyCertificate(cert);
+            }
+        }
+        if (nickName) {
+            if (!keyName || PL_strcmp(keyName,nickName)) {
+                /* PKCS#11 module returned unwanted keys */
+                PORT_Free((void *)keyName);
+                continue;
+            }
+        }
+        if (!keyName)
+            keyName = (char *)orphan;
 
-	PrintKey(PR_STDOUT, keyName, count, node->key, pwarg);
+        PrintKey(PR_STDOUT, keyName, count, node->key, pwarg);
 
-	if (keyName != (char *)orphan)
-	    PORT_Free((void *)keyName);
-	count++;
+        if (keyName != (char *)orphan)
+            PORT_Free((void *)keyName);
+        count++;
     }
     SECKEY_DestroyPrivateKeyList(list);
 
     if (count == 0) {
-	PR_fprintf(PR_STDOUT, "%s: no keys found\n", progName);
-	return SECFailure;
+        PR_fprintf(PR_STDOUT, "%s: no keys found\n", progName);
+        return SECFailure;
     }
     return SECSuccess;
 }
@@ -856,26 +856,26 @@ ListKeys(PK11SlotInfo *slot, const char *nickName, int index,
 {
     SECStatus rv = SECFailure;
     static const char fmt[] = \
-    	"%s: Checking token \"%.33s\" in slot \"%.65s\"\n";
+                              "%s: Checking token \"%.33s\" in slot \"%.65s\"\n";
 
     if (slot == NULL) {
-	PK11SlotList *list;
-	PK11SlotListElement *le;
+        PK11SlotList *list;
+        PK11SlotListElement *le;
 
-	list= PK11_GetAllTokens(CKM_INVALID_MECHANISM,PR_FALSE,PR_FALSE,pwdata);
-	if (list) {
-	    for (le = list->head; le; le = le->next) {
-		PR_fprintf(PR_STDOUT, fmt, progName, 
-			   PK11_GetTokenName(le->slot), 
-			   PK11_GetSlotName(le->slot));
-		rv &= ListKeysInSlot(le->slot,nickName,keyType,pwdata);
-	    }
-	    PK11_FreeSlotList(list);
-	}
+        list= PK11_GetAllTokens(CKM_INVALID_MECHANISM,PR_FALSE,PR_FALSE,pwdata);
+        if (list) {
+            for (le = list->head; le; le = le->next) {
+                PR_fprintf(PR_STDOUT, fmt, progName, 
+                        PK11_GetTokenName(le->slot), 
+                        PK11_GetSlotName(le->slot));
+                rv &= ListKeysInSlot(le->slot,nickName,keyType,pwdata);
+            }
+            PK11_FreeSlotList(list);
+        }
     } else {
-	PR_fprintf(PR_STDOUT, fmt, progName, PK11_GetTokenName(slot), 
-	           PK11_GetSlotName(slot));
-	rv = ListKeysInSlot(slot,nickName,keyType,pwdata);
+        PR_fprintf(PR_STDOUT, fmt, progName, PK11_GetTokenName(slot), 
+                PK11_GetSlotName(slot));
+        rv = ListKeysInSlot(slot,nickName,keyType,pwdata);
     }
     return rv;
 }

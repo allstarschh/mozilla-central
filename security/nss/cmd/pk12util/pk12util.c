@@ -130,12 +130,12 @@ P12U_NicknameCollisionCallback(SECItem *old_nick, PRBool *cancel, void *wincx)
     CERTCertificate* cert    = (CERTCertificate*)wincx;
 
     if (!cancel || !cert) {
-	pk12uErrno = PK12UERR_USER_CANCELLED;
-	return NULL;
+        pk12uErrno = PK12UERR_USER_CANCELLED;
+        return NULL;
     }
 
     if (!old_nick)
-	fprintf(stdout, "pk12util: no nickname for cert in PKCS12 file.\n");
+        fprintf(stdout, "pk12util: no nickname for cert in PKCS12 file.\n");
 
 #if 0
     /* XXX not handled yet  */
@@ -146,22 +146,22 @@ P12U_NicknameCollisionCallback(SECItem *old_nick, PRBool *cancel, void *wincx)
 
     nick = CERT_MakeCANickname(cert); 
     if (!nick) {
-    	return NULL;
+        return NULL;
     }
 
     if(old_nick && old_nick->data && old_nick->len &&
-       PORT_Strlen(nick) == old_nick->len &&
-       !PORT_Strncmp((char *)old_nick->data, nick, old_nick->len)) {
-	PORT_Free(nick);
-	PORT_SetError(SEC_ERROR_IO);
-	return NULL;
+            PORT_Strlen(nick) == old_nick->len &&
+            !PORT_Strncmp((char *)old_nick->data, nick, old_nick->len)) {
+        PORT_Free(nick);
+        PORT_SetError(SEC_ERROR_IO);
+        return NULL;
     }
 
     fprintf(stdout, "pk12util: using nickname: %s\n", nick);
     ret_nick = PORT_ZNew(SECItem);
     if(ret_nick == NULL) {
-	PORT_Free(nick);
-	return NULL;
+        PORT_Free(nick);
+        return NULL;
     }
 
     ret_nick->data = (unsigned char *)nick;

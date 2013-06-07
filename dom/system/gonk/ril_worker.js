@@ -10311,6 +10311,7 @@ let ICCRecordHelper = {
     function callback(options) {
       let contact = GsmPDUHelper.readAlphaIdDiallingNumber(options.recordSize);
       if (!contact || RIL.iccInfo.mbdn === contact.number){
+        debug("XXX MBDN not contact");
         return;
       }
       RIL.iccInfo.mbdn = contact.number;
