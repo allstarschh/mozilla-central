@@ -1106,7 +1106,8 @@ nsNSSCertificateDB::ImportCertsFromFile(nsISupports *aToken,
 
 NS_IMETHODIMP 
 nsNSSCertificateDB::ImportPKCS12File(nsISupports *aToken, 
-                                     nsIFile *aFile)
+                                     nsIFile *aFile,
+                                     const nsAString &aPassword)
 {
   NS_ENSURE_ARG(aFile);
   nsPKCS12Blob blob;
@@ -1114,7 +1115,7 @@ nsNSSCertificateDB::ImportPKCS12File(nsISupports *aToken,
   if (token) {
     blob.SetToken(token);
   }
-  return blob.ImportFromFile(aFile);
+  return blob.ImportFromFile(aFile, aPassword);
 }
 
 NS_IMETHODIMP 

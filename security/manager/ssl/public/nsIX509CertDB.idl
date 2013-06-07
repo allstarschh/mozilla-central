@@ -231,9 +231,11 @@ interface nsIX509CertDB : nsISupports {
    *                Can be null to mean any token.
    *  @param aFile Identifies a file that contains the data
    *               to be imported.
+   *  @param aPassword The password of this PKCS#12 file.
    */
   void importPKCS12File(in nsISupports aToken,
-                        in nsIFile aFile);
+                        in nsIFile aFile,
+                        [optional] in DOMString aPassword);
 
   /**
    *  Export a set of certs and keys from the database to a PKCS#12 file.

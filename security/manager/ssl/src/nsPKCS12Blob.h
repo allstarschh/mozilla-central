@@ -35,7 +35,7 @@ public:
   nsresult SetToken(nsIPK11Token *token);
 
   // PKCS#12 Import
-  nsresult ImportFromFile(nsIFile *file);
+  nsresult ImportFromFile(nsIFile *file, const nsAString& password);
 
   // PKCS#12 Export
 #if 0
@@ -72,7 +72,10 @@ private:
   enum RetryReason { rr_do_not_retry, rr_bad_password, rr_auto_retry_empty_password_flavors };
   enum ImportMode { im_standard_prompt, im_try_zero_length_secitem };
   
-  nsresult ImportFromFileHelper(nsIFile *file, ImportMode aImportMode, RetryReason &aWantRetry);
+  nsresult ImportFromFileHelper(nsIFile *aFile,
+                                ImportMode aImportMode,
+                                const nsString& aPassword,
+                                RetryReason &aWantRetry);
 
   // NSPR file I/O for export file
   PRFileDesc *mTmpFile;

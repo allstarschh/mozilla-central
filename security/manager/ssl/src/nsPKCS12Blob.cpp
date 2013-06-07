@@ -93,7 +93,7 @@ nsPKCS12Blob::SetToken(nsIPK11Token *token)
 // Given a file handle, read a PKCS#12 blob from that file, decode it,
 // and import the results into the token.
 nsresult
-nsPKCS12Blob::ImportFromFile(nsIFile *file)
+nsPKCS12Blob::ImportFromFile(nsIFile *file, const nsAString& password)
 {
   nsNSSShutDownPreventionLock locker;
   nsresult rv = NS_OK;
@@ -116,15 +116,16 @@ nsPKCS12Blob::ImportFromFile(nsIFile *file)
   // init slot
   rv = mToken->Login(true);
   if (NS_FAILED(rv)) return rv;
-  
+
   RetryReason wantRetry;
-  
+  nsString pw(password);
+
   do {
-    rv = ImportFromFileHelper(file, im_standard_prompt, wantRetry);
+    rv = ImportFromFileHelper(file, im_standard_prompt, pw, wantRetry);
     
     if (NS_SUCCEEDED(rv) && wantRetry == rr_auto_retry_empty_password_flavors)
     {
-      rv = ImportFromFileHelper(file, im_try_zero_length_secitem, wantRetry);
+      rv = ImportFromFileHelper(file, im_try_zero_length_secitem, pw, wantRetry);
     }
   }
   while (NS_SUCCEEDED(rv) && (wantRetry != rr_do_not_retry));
@@ -133,8 +134,9 @@ nsPKCS12Blob::ImportFromFile(nsIFile *file)
 }
 
 nsresult
-nsPKCS12Blob::ImportFromFileHelper(nsIFile *file, 
+nsPKCS12Blob::ImportFromFileHelper(nsIFile *aFile,
                                    nsPKCS12Blob::ImportMode aImportMode,
+                                   const nsString& aPassword,
                                    nsPKCS12Blob::RetryReason &aWantRetry)
 {
   nsNSSShutDownPreventionLock locker;
@@ -153,7 +155,7 @@ nsPKCS12Blob::ImportFromFileHelper(nsIFile *file,
   {
     unicodePw.len = 0;
   }
-  else
+  else if (aPassword.IsEmpty())
   {
     // get file password (unicode)
     rv = getPKCS12FilePassword(&unicodePw);
@@ -163,7 +165,11 @@ nsPKCS12Blob::ImportFromFileHelper(nsIFile *file,
       return NS_OK;
     }
   }
-  
+  else
+  {
+    unicodeToItem(aPassword.get(), &unicodePw);
+  }
+
   mToken->GetTokenName(getter_Copies(tokenName));
   {
     NS_ConvertUTF16toUTF8 tokenNameCString(tokenName);
@@ -184,7 +190,7 @@ nsPKCS12Blob::ImportFromFileHelper(nsIFile *file,
     goto finish;
   }
   // read input file and feed it to the decoder
-  rv = inputToDecoder(dcx, file);
+  rv = inputToDecoder(dcx, aFile);
   if (NS_FAILED(rv)) {
     if (NS_ERROR_ABORT == rv) {
       // inputToDecoder indicated a NSS error
