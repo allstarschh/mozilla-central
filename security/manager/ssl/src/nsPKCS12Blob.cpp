@@ -130,10 +130,12 @@ nsPKCS12Blob::ImportFromFile(nsIFile *file, const nsAString& password)
     LOGI("XXX %s exit 3", __func__);
     return rv;
   }
+  LOGI("XXX %s enter 1", __func__);
 
   RetryReason wantRetry;
   nsString pw(password);
 
+  LOGI("XXX %s enter 2", __func__);
   do {
     rv = ImportFromFileHelper(file, im_standard_prompt, pw, wantRetry);
     
@@ -144,6 +146,7 @@ nsPKCS12Blob::ImportFromFile(nsIFile *file, const nsAString& password)
   }
   while (NS_SUCCEEDED(rv) && (wantRetry != rr_do_not_retry));
 
+  LOGI("XXX %s exit", __func__);
   return rv;
 }
 

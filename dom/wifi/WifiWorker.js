@@ -2472,8 +2472,8 @@ WifiWorker.prototype = {
     }
 
     try {
-      //this.certDB.importPKCS12File(null, cafile);
-      this.certDB.importPKCS12FileWithPassword(null, cafile, password);
+      dump("Import PKCS12");
+      this.certDB.importPKCS12File(null, cafile, password);
     } catch (e) {
       dump("Import CA Failed: " + e.message);
     }

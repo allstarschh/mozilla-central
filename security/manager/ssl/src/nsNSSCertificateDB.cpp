@@ -47,6 +47,12 @@
 #include "ocsp.h"
 #include "plbase64.h"
 
+#ifdef LOG
+#error "XXX"
+#endif
+#include <android/log.h>
+#define LOGI(args...)  __android_log_print(ANDROID_LOG_INFO, "nsNSSCertificateDB.cpp", args)
+
 using namespace mozilla;
 using namespace mozilla::psm;
 using mozilla::psm::SharedSSLState;
@@ -1109,6 +1115,7 @@ nsNSSCertificateDB::ImportPKCS12File(nsISupports *aToken,
                                      nsIFile *aFile,
                                      const nsAString &aPassword)
 {
+  LOGI("XXX %s enter", __func__);
   NS_ENSURE_ARG(aFile);
   nsPKCS12Blob blob;
   nsCOMPtr<nsIPK11Token> token = do_QueryInterface(aToken);

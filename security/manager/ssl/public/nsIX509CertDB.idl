@@ -30,7 +30,7 @@ interface nsIOpenSignedJARFileCallback : nsISupports
  * This represents a service to access and manipulate 
  * X.509 certificates stored in a database.
  */
-[scriptable, uuid(ab0a1c52-f7fd-4fe7-9e65-7d3705a8580e)]
+[scriptable, uuid(5baf2c0d-c2e2-450d-886d-ab59751ebebc)]
 interface nsIX509CertDB : nsISupports {
 
   /**
