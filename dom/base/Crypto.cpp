@@ -11,6 +11,7 @@
 #include "nsCOMPtr.h"
 #include "nsIRandomGenerator.h"
 
+#include "mozilla/dom/WebCryptoBinding.h"
 #include "mozilla/dom/ContentChild.h"
 
 using mozilla::dom::ContentChild;
@@ -23,7 +24,7 @@ namespace dom {
 NS_INTERFACE_MAP_BEGIN(Crypto)
   NS_INTERFACE_MAP_ENTRY(nsISupports)
   NS_INTERFACE_MAP_ENTRY(nsIDOMCrypto)
-  NS_DOM_INTERFACE_MAP_ENTRY_CLASSINFO(Crypto)
+//  NS_DOM_INTERFACE_MAP_ENTRY_CLASSINFO(Crypto)
 NS_INTERFACE_MAP_END
 
 NS_IMPL_ADDREF(Crypto)
@@ -32,11 +33,25 @@ NS_IMPL_RELEASE(Crypto)
 Crypto::Crypto()
 {
   MOZ_COUNT_CTOR(Crypto);
+  SetIsDOMBinding();
 }
 
 Crypto::~Crypto()
 {
   MOZ_COUNT_DTOR(Crypto);
+}
+
+/* virtual */ JSObject*
+Crypto::WrapObject(JSContext* aCx, JS::Handle<JSObject*> aScope)
+{
+  //TODO
+  return nullptr;
+}
+
+already_AddRefed<SubtleCrypto>
+Crypto::Subtle()
+{
+  return nullptr;
 }
 
 NS_IMETHODIMP

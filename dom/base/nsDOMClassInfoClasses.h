@@ -60,7 +60,7 @@ DOMCI_CLASS(TreeContentView)
 #ifndef MOZ_DISABLE_CRYPTOLEGACY
 DOMCI_CLASS(CRMFObject)
 #endif
-DOMCI_CLASS(Crypto)
+//DOMCI_CLASS(Crypto)
 
 // Rect object used by getComputedStyle
 DOMCI_CLASS(CSSRect)

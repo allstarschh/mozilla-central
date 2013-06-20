@@ -169,8 +169,8 @@
 #ifndef MOZ_DISABLE_CRYPTOLEGACY
 #include "nsIDOMCRMFObject.h"
 #include "nsIDOMCryptoLegacy.h"
-#else
-#include "nsIDOMCrypto.h"
+//#else
+//#include "nsIDOMCrypto.h"
 #endif
 #include "nsIControllers.h"
 #include "nsISelection.h"
@@ -370,7 +370,7 @@ const uint32_t kDOMClassInfo_##_dom_class##_interfaces =                      \
 #ifndef MOZ_DISABLE_CRYPTOLEGACY
 DOMCI_DATA_NO_CLASS(CRMFObject)
 #endif
-DOMCI_DATA_NO_CLASS(Crypto)
+//DOMCI_DATA_NO_CLASS(Crypto)
 
 DOMCI_DATA_NO_CLASS(ContentFrameMessageManager)
 DOMCI_DATA_NO_CLASS(ChromeMessageBroadcaster)
@@ -577,8 +577,8 @@ static nsDOMClassInfoData sClassInfoData[] = {
   NS_DEFINE_CLASSINFO_DATA(CRMFObject, nsDOMGenericSH,
                            DOM_DEFAULT_SCRIPTABLE_FLAGS)
 #endif
-  NS_DEFINE_CLASSINFO_DATA(Crypto, nsDOMGenericSH,
-                           DOM_DEFAULT_SCRIPTABLE_FLAGS)
+//  NS_DEFINE_CLASSINFO_DATA(Crypto, nsDOMGenericSH,
+//                           DOM_DEFAULT_SCRIPTABLE_FLAGS)
 
   NS_DEFINE_CLASSINFO_DATA(CSSRect, nsDOMGenericSH,
                            DOM_DEFAULT_SCRIPTABLE_FLAGS)
@@ -1579,9 +1579,9 @@ nsDOMClassInfo::Init()
    DOM_CLASSINFO_MAP_END
 #endif
 
-  DOM_CLASSINFO_MAP_BEGIN(Crypto, nsIDOMCrypto)
-    DOM_CLASSINFO_MAP_ENTRY(nsIDOMCrypto)
-  DOM_CLASSINFO_MAP_END
+//  DOM_CLASSINFO_MAP_BEGIN(Crypto, nsIDOMCrypto)
+//    DOM_CLASSINFO_MAP_ENTRY(nsIDOMCrypto)
+//  DOM_CLASSINFO_MAP_END
 
   DOM_CLASSINFO_MAP_BEGIN_NO_CLASS_IF(ChromeWindow, nsIDOMWindow)
     DOM_CLASSINFO_WINDOW_MAP_ENTRIES(true)

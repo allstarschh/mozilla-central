@@ -340,6 +340,7 @@ webidl_files = \
   URL.webidl \
   ValidityState.webidl \
   WebComponents.webidl \
+  WebCrypto.webidl \
   WebSocket.webidl \
   WheelEvent.webidl \
   UndoManager.webidl \
