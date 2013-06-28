@@ -3805,7 +3805,7 @@ nsGlobalWindow::GetCrypto(nsIDOMCrypto** aCrypto)
 #ifndef MOZ_DISABLE_CRYPTOLEGACY
     mCrypto = do_CreateInstance(NS_CRYPTO_CONTRACTID);
 #else
-    mCrypto = new Crypto();
+    mCrypto = new Crypto(this);
 #endif
   }
   NS_IF_ADDREF(*aCrypto = mCrypto);

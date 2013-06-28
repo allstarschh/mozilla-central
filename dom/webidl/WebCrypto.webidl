@@ -1,6 +1,6 @@
 [NoInterfaceObject]
 interface RandomSource {
-//  ArrayBufferView getRandomValues(ArrayBufferView array);
+  ArrayBufferView getRandomValues(ArrayBufferView array);
 };
 
 interface Crypto {
