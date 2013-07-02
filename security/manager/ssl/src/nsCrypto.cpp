@@ -247,6 +247,7 @@ NS_IMPL_ISUPPORTS1(nsP12Runnable, nsIRunnable)
 NS_IMPL_ISUPPORTS0(nsCryptoRunArgs)
 
 nsCrypto::nsCrypto() :
+  mozilla::dom::Crypto(nullptr),
   mEnableSmartCardEvents(false)
 {
 }

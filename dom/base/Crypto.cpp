@@ -9,8 +9,8 @@
 #include "nsCOMPtr.h"
 #include "nsIRandomGenerator.h"
 
-#include "mozilla/dom/WebCryptoBinding.h"
 #include "mozilla/dom/ContentChild.h"
+#include "mozilla/dom/WebCryptoBinding.h"
 
 using mozilla::dom::ContentChild;
 
@@ -20,9 +20,9 @@ namespace mozilla {
 namespace dom {
 
 NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(Crypto)
+  NS_WRAPPERCACHE_INTERFACE_MAP_ENTRY
   NS_INTERFACE_MAP_ENTRY(nsISupports)
   NS_INTERFACE_MAP_ENTRY(nsIDOMCrypto)
-  NS_WRAPPERCACHE_INTERFACE_MAP_ENTRY
 NS_INTERFACE_MAP_END
 
 NS_IMPL_CYCLE_COLLECTING_ADDREF(Crypto)
@@ -49,7 +49,7 @@ Crypto::WrapObject(JSContext* aCx, JS::Handle<JSObject*> aScope)
 }
 
 NS_IMETHODIMP
-Crypto::GetRandomValues(const JS::Value& aData, JSContext *cx,
+Crypto::GetRandomValues(const JS::Value& aData, JSContext* cx,
                         JS::Value* _retval)
 {
   NS_ABORT_IF_FALSE(NS_IsMainThread(), "Called on the wrong thread");
@@ -102,7 +102,7 @@ Crypto::GetRandomValues(const JS::Value& aData, JSContext *cx,
 }
 
 JSObject *
-Crypto::GetRandomValues(JSContext *aCx, ArrayBufferView& aArray)
+Crypto::GetRandomValues(JSContext* aCx, ArrayBufferView& aArray)
 {
   MOZ_ASSERT(sizeof(*aArray.Data()) == 1);
   uint32_t dataLen = aArray.Length();
@@ -113,7 +113,7 @@ Crypto::GetRandomValues(JSContext *aCx, ArrayBufferView& aArray)
 }
 
 NS_IMETHODIMP
-Crypto::GetRandomValues(uint8_t *aData, uint32_t aDataLen)
+Crypto::GetRandomValues(uint8_t* aData, uint32_t aDataLen)
 {
   if (XRE_GetProcessType() != GeckoProcessType_Default) {
     InfallibleTArray<uint8_t> randomValues;
@@ -207,7 +207,7 @@ Crypto::DisableRightClick()
 }
 #endif
 
-uint8_t*
+/* static */ uint8_t*
 Crypto::GetRandomValues(uint32_t aLength)
 {
   nsCOMPtr<nsIRandomGenerator> randomGenerator;

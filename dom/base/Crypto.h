@@ -33,7 +33,7 @@ public:
   NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS(Crypto)
 
   JSObject *
-  GetRandomValues(JSContext *aCx, ArrayBufferView& aArray);
+  GetRandomValues(JSContext* aCx, ArrayBufferView& aArray);
 
   // WebIDL
 
@@ -44,14 +44,14 @@ public:
   }
 
   virtual JSObject*
-  WrapObject(JSContext *aCx, JS::Handle<JSObject*> aScope) MOZ_OVERRIDE;
+  WrapObject(JSContext* aCx, JS::Handle<JSObject*> aScope) MOZ_OVERRIDE;
 
   static uint8_t*
   GetRandomValues(uint32_t aLength);
 
 private:
   NS_IMETHODIMP
-  GetRandomValues(uint8_t *aData, uint32_t aDataLen);
+  GetRandomValues(uint8_t* aData, uint32_t aDataLen);
 
   nsCOMPtr<nsPIDOMWindow> mWindow;
 };
