@@ -12,9 +12,9 @@
 #include "mozilla/dom/ContentChild.h"
 #include "mozilla/dom/WebCryptoBinding.h"
 
-//#include <android/log.h>
-//#define LOGI(args...)  __android_log_print(ANDROID_LOG_INFO, "Crypto", args)
-#define LOGI(args...)
+#include <android/log.h>
+#define LOGI(args...)  __android_log_print(ANDROID_LOG_INFO, "Crypto", args)
+//#define LOGI(args...)
 using mozilla::dom::ContentChild;
 
 using namespace js::ArrayBufferView;
@@ -52,7 +52,7 @@ Crypto::WrapObject(JSContext* aCx, JS::Handle<JSObject*> aScope)
 }
 
 NS_IMETHODIMP
-Crypto::GetRandomValues(const JS::Value& aData, JSContext* cx,
+Crypto::GetRandomValues(const JS::Value& aData, JSContext* aCx,
                         JS::Value* _retval)
 {
   NS_ABORT_IF_FALSE(NS_IsMainThread(), "Called on the wrong thread");
@@ -62,7 +62,7 @@ Crypto::GetRandomValues(const JS::Value& aData, JSContext* cx,
     return NS_ERROR_DOM_NOT_OBJECT_ERR;
   }
 
-  JS::Rooted<JSObject*> view(cx, &aData.toObject());
+  JS::Rooted<JSObject*> view(aCx, &aData.toObject());
 
   // Make sure this object is an ArrayBufferView
   if (!JS_IsTypedArrayObject(view)) {
@@ -107,19 +107,35 @@ Crypto::GetRandomValues(const JS::Value& aData, JSContext* cx,
 JSObject *
 Crypto::GetRandomValues(JSContext* aCx, ArrayBufferView& aArray, ErrorResult& aRv)
 {
-  NS_WARNING("GetRandomValues new");
+  NS_ABORT_IF_FALSE(NS_IsMainThread(), "Called on the wrong thread");
   LOGI("%s enter", __func__);
 
-  LOGI("%s length=%d", __func__, aArray.Length());
+  JS::Rooted<JSObject*> view(aCx, aArray.Obj());
+
+  // Throw if the wrong type of ArrayBufferView is passed in
+  // (Part of the Web Crypto API spec)
+  switch (JS_GetArrayBufferViewType(view)) {
+    case TYPE_INT8:
+    case TYPE_UINT8:
+    case TYPE_UINT8_CLAMPED:
+    case TYPE_INT16:
+    case TYPE_UINT16:
+    case TYPE_INT32:
+    case TYPE_UINT32:
+      break;
+    default:
+      aRv.Throw(NS_ERROR_DOM_TYPE_MISMATCH_ERR);
+      return nullptr;
+  }
 
   uint32_t dataLen = aArray.Length();
+  LOGI("%s length=%d", __func__, dataLen);
   if (dataLen == 0) {
     NS_WARNING("ArrayBufferView length is 0, cannot continue");
     return aArray.Obj();
   } else if (dataLen > 65536) {
     aRv.Throw(NS_ERROR_DOM_QUOTA_EXCEEDED_ERR);
     return nullptr;
-    LOGI("continue after throw");
   }
 
   uint8_t* data = reinterpret_cast<uint8_t*>(aArray.Data());
