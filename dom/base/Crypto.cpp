@@ -12,6 +12,9 @@
 #include "mozilla/dom/ContentChild.h"
 #include "mozilla/dom/WebCryptoBinding.h"
 
+//#include <android/log.h>
+//#define LOGI(args...)  __android_log_print(ANDROID_LOG_INFO, "Crypto", args)
+#define LOGI(args...)
 using mozilla::dom::ContentChild;
 
 using namespace js::ArrayBufferView;
@@ -102,13 +105,27 @@ Crypto::GetRandomValues(const JS::Value& aData, JSContext* cx,
 }
 
 JSObject *
-Crypto::GetRandomValues(JSContext* aCx, ArrayBufferView& aArray)
+Crypto::GetRandomValues(JSContext* aCx, ArrayBufferView& aArray, ErrorResult& aRv)
 {
-  MOZ_ASSERT(sizeof(*aArray.Data()) == 1);
+  NS_WARNING("GetRandomValues new");
+  LOGI("%s enter", __func__);
+
+  LOGI("%s length=%d", __func__, aArray.Length());
+
   uint32_t dataLen = aArray.Length();
+  if (dataLen == 0) {
+    NS_WARNING("ArrayBufferView length is 0, cannot continue");
+    return aArray.Obj();
+  } else if (dataLen > 65536) {
+    aRv.Throw(NS_ERROR_DOM_QUOTA_EXCEEDED_ERR);
+    return nullptr;
+    LOGI("continue after throw");
+  }
+
   uint8_t* data = reinterpret_cast<uint8_t*>(aArray.Data());
   GetRandomValues(data, dataLen);
 
+  LOGI("%s exit", __func__);
   return aArray.Obj();
 }
 

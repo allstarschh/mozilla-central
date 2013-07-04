@@ -9,6 +9,7 @@
 
 [NoInterfaceObject]
 interface RandomSource {
+  [Throws]
   ArrayBufferView getRandomValues(ArrayBufferView array);
 };
 

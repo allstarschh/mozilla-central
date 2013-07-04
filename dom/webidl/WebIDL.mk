@@ -340,7 +340,6 @@ webidl_files = \
   URL.webidl \
   ValidityState.webidl \
   WebComponents.webidl \
-  WebCrypto.webidl \
   WebSocket.webidl \
   WheelEvent.webidl \
   UndoManager.webidl \
@@ -406,6 +405,12 @@ webidl_files += \
   MozStkCommandEvent.webidl \
   $(NULL)
 endif
+
+# ifdef MOZ_DISABLE_CRYPTOLEGACY
+webidl_files += \
+  WebCrypto.webidl \
+  $(NULL)
+# endif
 
 ifdef ENABLE_TESTS
 test_webidl_files := \
