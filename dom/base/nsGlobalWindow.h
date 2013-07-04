@@ -97,6 +97,7 @@ class nsIContent;
 class nsIDocument;
 class nsPresContext;
 class nsIDOMCrypto;
+class nsIDOMCryptoLegacy;
 class nsIDOMEvent;
 class nsIScrollableFrame;
 class nsIControllers;
@@ -1188,8 +1189,11 @@ protected:
   nsString                      mStatus;
   nsString                      mDefaultStatus;
   nsGlobalWindowObserver*       mObserver;
+#ifndef MOZ_DISABLE_CRYPTOLEGACY
+  nsCOMPtr<nsIDOMCryptoLegacy>  mCrypto;
+#else
   nsCOMPtr<nsIDOMCrypto>        mCrypto;
-
+#endif
   nsCOMPtr<nsIDOMStorage>      mLocalStorage;
   nsCOMPtr<nsIDOMStorage>      mSessionStorage;
 

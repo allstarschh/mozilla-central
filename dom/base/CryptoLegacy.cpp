@@ -1,7 +1,7 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "Crypto.h"
+#include "CryptoLegacy.h"
 #include "nsIDOMClassInfo.h"
 #include "DOMError.h"
 #include "nsString.h"
@@ -20,27 +20,27 @@ using namespace js::ArrayBufferView;
 namespace mozilla {
 namespace dom {
 
-NS_INTERFACE_MAP_BEGIN(Crypto)
+NS_INTERFACE_MAP_BEGIN(CryptoLegacy)
   NS_INTERFACE_MAP_ENTRY(nsISupports)
   NS_INTERFACE_MAP_ENTRY(nsIDOMCrypto)
-  NS_DOM_INTERFACE_MAP_ENTRY_CLASSINFO(Crypto)
+  NS_DOM_INTERFACE_MAP_ENTRY_CLASSINFO(CryptoLegacy)
 NS_INTERFACE_MAP_END
 
-NS_IMPL_ADDREF(Crypto)
-NS_IMPL_RELEASE(Crypto)
+NS_IMPL_ADDREF(CryptoLegacy)
+NS_IMPL_RELEASE(CryptoLegacy)
 
-Crypto::Crypto()
+CryptoLegacy::CryptoLegacy()
 {
-  MOZ_COUNT_CTOR(Crypto);
+  MOZ_COUNT_CTOR(CryptoLegacy);
 }
 
-Crypto::~Crypto()
+CryptoLegacy::~CryptoLegacy()
 {
-  MOZ_COUNT_DTOR(Crypto);
+  MOZ_COUNT_DTOR(CryptoLegacy);
 }
 
 NS_IMETHODIMP
-Crypto::GetRandomValues(const JS::Value& aData, JSContext *cx,
+CryptoLegacy::GetRandomValues(const JS::Value& aData, JSContext *cx,
                         JS::Value* _retval)
 {
   NS_ABORT_IF_FALSE(NS_IsMainThread(), "Called on the wrong thread");
@@ -58,7 +58,7 @@ Crypto::GetRandomValues(const JS::Value& aData, JSContext *cx,
   }
 
   // Throw if the wrong type of ArrayBufferView is passed in
-  // (Part of the Web Crypto API spec)
+  // (Part of the Web CryptoLegacy API spec)
   switch (JS_GetArrayBufferViewType(view)) {
     case TYPE_INT8:
     case TYPE_UINT8:
@@ -112,8 +112,72 @@ Crypto::GetRandomValues(const JS::Value& aData, JSContext *cx,
   return NS_OK;
 }
 
+NS_IMETHODIMP
+CryptoLegacy::GetVersion(nsAString & aVersion)
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+CryptoLegacy::GetEnableSmartCardEvents(bool *aEnableSmartCardEvents)
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+CryptoLegacy::SetEnableSmartCardEvents(bool aEnableSmartCardEvents)
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+CryptoLegacy::GenerateCRMFRequest(nsIDOMCRMFObject * *_retval)
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+CryptoLegacy::ImportUserCertificates(const nsAString & nickname,
+                               const nsAString & cmmfResponse,
+                               bool doForcedBackup, nsAString & _retval)
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+CryptoLegacy::PopChallengeResponse(const nsAString & challenge,
+                             nsAString & _retval)
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+CryptoLegacy::Random(int32_t numBytes, nsAString & _retval)
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+CryptoLegacy::SignText(const nsAString & stringToSign, const nsAString & caOption,
+                 nsAString & _retval)
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+CryptoLegacy::Logout()
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+CryptoLegacy::DisableRightClick()
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
 uint8_t*
-Crypto::GetRandomValues(uint32_t aLength)
+CryptoLegacy::GetRandomValues(uint32_t aLength)
 {
   nsCOMPtr<nsIRandomGenerator> randomGenerator;
   nsresult rv;
@@ -128,6 +192,5 @@ Crypto::GetRandomValues(uint32_t aLength)
 
   return buf;
 }
-
 } // namespace dom
 } // namespace mozilla

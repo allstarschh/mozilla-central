@@ -87,7 +87,11 @@
 #include "nsIHTMLDocument.h"
 #include "nsIDOMHTMLDocument.h"
 #include "nsIDOMHTMLElement.h"
+#ifndef MOZ_DISABLE_CRYPTOLEGACY
+#include "CryptoLegacy.h"
+#else
 #include "Crypto.h"
+#endif
 #include "nsIDOMDocument.h"
 #include "nsIDOMElement.h"
 #include "nsIDOMEvent.h"

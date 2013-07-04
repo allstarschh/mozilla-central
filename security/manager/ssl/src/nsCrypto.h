@@ -7,7 +7,7 @@
 #define _nsCrypto_h_
 
 #ifndef MOZ_DISABLE_CRYPTOLEGACY
-#include "Crypto.h"
+#include "CryptoLegacy.h"
 #include "nsCOMPtr.h"
 #include "nsIDOMCRMFObject.h"
 #include "nsIDOMCryptoLegacy.h"
@@ -42,7 +42,7 @@ private:
 };
 
 
-class nsCrypto: public mozilla::dom::Crypto
+class nsCrypto: public mozilla::dom::CryptoLegacy
 {
 public:
   nsCrypto();
@@ -52,7 +52,7 @@ public:
 
   // If legacy DOM crypto is enabled this is the class that actually
   // implements the legacy methods.
-  NS_DECL_NSIDOMCRYPTO
+  NS_DECL_NSIDOMCRYPTOLEGACY
 
 private:
   static already_AddRefed<nsIPrincipal> GetScriptPrincipal(JSContext *cx);

@@ -59,6 +59,7 @@ DOMCI_CLASS(TreeContentView)
 // Crypto classes
 #ifndef MOZ_DISABLE_CRYPTOLEGACY
 DOMCI_CLASS(CRMFObject)
+DOMCI_CLASS(CryptoLegacy)
 #endif
 DOMCI_CLASS(Crypto)
 

@@ -208,11 +208,11 @@ private:
 
 // QueryInterface implementation for nsCrypto
 NS_INTERFACE_MAP_BEGIN(nsCrypto)
-  NS_INTERFACE_MAP_ENTRY(nsIDOMCrypto)
-NS_INTERFACE_MAP_END_INHERITING(mozilla::dom::Crypto)
+  NS_INTERFACE_MAP_ENTRY(nsIDOMCryptoLegacy)
+NS_INTERFACE_MAP_END_INHERITING(mozilla::dom::CryptoLegacy)
 
-NS_IMPL_ADDREF_INHERITED(nsCrypto, mozilla::dom::Crypto)
-NS_IMPL_RELEASE_INHERITED(nsCrypto, mozilla::dom::Crypto)
+NS_IMPL_ADDREF_INHERITED(nsCrypto, mozilla::dom::CryptoLegacy)
+NS_IMPL_RELEASE_INHERITED(nsCrypto, mozilla::dom::CryptoLegacy)
  
 // QueryInterface implementation for nsCRMFObject
 NS_INTERFACE_MAP_BEGIN(nsCRMFObject)
@@ -2846,12 +2846,12 @@ nsCrypto::DisableRightClick()
   return NS_ERROR_NOT_IMPLEMENTED;
 }
 
-NS_IMETHODIMP
-nsCrypto::GetRandomValues(const JS::Value& aData, JSContext *cx,
-                          JS::Value* _retval)
-{
-  return mozilla::dom::Crypto::GetRandomValues(aData, cx, _retval);
-}
+//NS_IMETHODIMP
+//nsCrypto::GetRandomValues(const JS::Value& aData, JSContext *cx,
+//                          JS::Value* _retval)
+//{
+//  return mozilla::dom::Crypto::GetRandomValues(aData, cx, _retval);
+//}
 
 nsCRMFObject::nsCRMFObject()
 {

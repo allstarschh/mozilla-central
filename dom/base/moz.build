@@ -23,6 +23,7 @@ MODULE = 'dom'
 
 EXPORTS += [
     'Crypto.h',
+    'CryptoLegacy.h',
     'nsContentPermissionHelper.h',
     'nsDOMCID.h',
     'nsDOMClassInfoClasses.h',
@@ -66,6 +67,7 @@ EXPORTS.mozilla.dom += [
 CPP_SOURCES += [
     'BarProps.cpp',
     'Crypto.cpp',
+    'CryptoLegacy.cpp',
     'DOMCursor.cpp',
     'DOMError.cpp',
     'DOMRequest.cpp',

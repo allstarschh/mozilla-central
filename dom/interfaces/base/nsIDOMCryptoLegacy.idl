@@ -4,11 +4,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "domstubs.idl"
+#include "nsIDOMCrypto.idl"
 
 interface nsIDOMCRMFObject;
 
 [scriptable, uuid(e1df1d4d-41ef-4225-934a-107c5d612686)]
-interface nsIDOMCrypto : nsISupports
+interface nsIDOMCryptoLegacy : nsIDOMCrypto
 {
   readonly attribute DOMString        version;
   attribute boolean         enableSmartCardEvents;

@@ -169,9 +169,8 @@
 #ifndef MOZ_DISABLE_CRYPTOLEGACY
 #include "nsIDOMCRMFObject.h"
 #include "nsIDOMCryptoLegacy.h"
-#else
-#include "nsIDOMCrypto.h"
 #endif
+#include "nsIDOMCrypto.h"
 #include "nsIControllers.h"
 #include "nsISelection.h"
 #include "nsIBoxObject.h"
@@ -369,6 +368,7 @@ const uint32_t kDOMClassInfo_##_dom_class##_interfaces =                      \
 
 #ifndef MOZ_DISABLE_CRYPTOLEGACY
 DOMCI_DATA_NO_CLASS(CRMFObject)
+DOMCI_DATA_NO_CLASS(CryptoLegacy)
 #endif
 DOMCI_DATA_NO_CLASS(Crypto)
 
@@ -575,6 +575,8 @@ static nsDOMClassInfoData sClassInfoData[] = {
   // Crypto classes
 #ifndef MOZ_DISABLE_CRYPTOLEGACY
   NS_DEFINE_CLASSINFO_DATA(CRMFObject, nsDOMGenericSH,
+                           DOM_DEFAULT_SCRIPTABLE_FLAGS)
+  NS_DEFINE_CLASSINFO_DATA(CryptoLegacy, nsDOMGenericSH,
                            DOM_DEFAULT_SCRIPTABLE_FLAGS)
 #endif
   NS_DEFINE_CLASSINFO_DATA(Crypto, nsDOMGenericSH,
@@ -1574,9 +1576,13 @@ nsDOMClassInfo::Init()
 #endif
 
 #ifndef MOZ_DISABLE_CRYPTOLEGACY
-   DOM_CLASSINFO_MAP_BEGIN(CRMFObject, nsIDOMCRMFObject)
-     DOM_CLASSINFO_MAP_ENTRY(nsIDOMCRMFObject)
-   DOM_CLASSINFO_MAP_END
+  DOM_CLASSINFO_MAP_BEGIN(CRMFObject, nsIDOMCRMFObject)
+    DOM_CLASSINFO_MAP_ENTRY(nsIDOMCRMFObject)
+  DOM_CLASSINFO_MAP_END
+
+  DOM_CLASSINFO_MAP_BEGIN(CryptoLegacy, nsIDOMCryptoLegacy)
+    DOM_CLASSINFO_MAP_ENTRY(nsIDOMCryptoLegacy)
+  DOM_CLASSINFO_MAP_END
 #endif
 
   DOM_CLASSINFO_MAP_BEGIN(Crypto, nsIDOMCrypto)

@@ -45,6 +45,7 @@
 #include "nsSmartCardMonitor.h"
 #include "nsIDOMCryptoLegacy.h"
 #include "nsIPrincipal.h"
+#include "nsIDOMCryptoLegacy.h"
 #else
 #include "nsIDOMCrypto.h"
 #endif
@@ -514,17 +515,18 @@ nsNSSComponent::DispatchEventToWindow(nsIDOMWindow *domWin,
   // check if we've enabled smart card events on this window
   // NOTE: it's not an error to say that we aren't going to dispatch
   // the event.
-  nsCOMPtr<nsIDOMCrypto> crypto;
-  domWin->GetCrypto(getter_AddRefs(crypto));
-  if (!crypto) {
-    return NS_OK; // nope, it doesn't have a crypto property
-  }
+  // TODO
+//  nsCOMPtr<nsIDOMCrypto> crypto;
+//  domWin->GetCrypto(getter_AddRefs(crypto));
+//  if (!crypto) {
+//    return NS_OK; // nope, it doesn't have a crypto property
+//  }
 
   bool boolrv;
-  crypto->GetEnableSmartCardEvents(&boolrv);
-  if (!boolrv) {
-    return NS_OK; // nope, it's not enabled.
-  }
+//  crypto->GetEnableSmartCardEvents(&boolrv);
+//  if (!boolrv) {
+//    return NS_OK; // nope, it's not enabled.
+//  }
 
   // dispatch the event ...
 
