@@ -9,6 +9,7 @@ MODULE = 'pipnss'
 EXPORTS += [
     'CryptoTask.h',
     'ScopedNSSTypes.h',
+    'nsCrypto.h',
     'nsNSSShutDown.h',
     'nsRandomGenerator.h',
 ]

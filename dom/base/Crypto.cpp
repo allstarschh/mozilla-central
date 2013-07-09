@@ -10,11 +10,12 @@
 #include "nsIRandomGenerator.h"
 
 #include "mozilla/dom/ContentChild.h"
+#ifdef MOZ_DISABLE_CRYPTOLEGACY
 #include "mozilla/dom/WebCryptoBinding.h"
+#else
+#include "mozilla/dom/CryptoLegacyBinding.h"
+#endif
 
-#include <android/log.h>
-#define LOGI(args...)  __android_log_print(ANDROID_LOG_INFO, "Crypto", args)
-//#define LOGI(args...)
 using mozilla::dom::ContentChild;
 
 using namespace js::ArrayBufferView;
@@ -25,7 +26,6 @@ namespace dom {
 NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(Crypto)
   NS_WRAPPERCACHE_INTERFACE_MAP_ENTRY
   NS_INTERFACE_MAP_ENTRY(nsISupports)
-  NS_INTERFACE_MAP_ENTRY(nsIDOMCrypto)
 NS_INTERFACE_MAP_END
 
 NS_IMPL_CYCLE_COLLECTING_ADDREF(Crypto)
@@ -51,64 +51,10 @@ Crypto::WrapObject(JSContext* aCx, JS::Handle<JSObject*> aScope)
   return CryptoBinding::Wrap(aCx, aScope, this);
 }
 
-NS_IMETHODIMP
-Crypto::GetRandomValues(const JS::Value& aData, JSContext* aCx,
-                        JS::Value* _retval)
-{
-  NS_ABORT_IF_FALSE(NS_IsMainThread(), "Called on the wrong thread");
-
-  // Make sure this is a JavaScript object
-  if (!aData.isObject()) {
-    return NS_ERROR_DOM_NOT_OBJECT_ERR;
-  }
-
-  JS::Rooted<JSObject*> view(aCx, &aData.toObject());
-
-  // Make sure this object is an ArrayBufferView
-  if (!JS_IsTypedArrayObject(view)) {
-    return NS_ERROR_DOM_TYPE_MISMATCH_ERR;
-  }
-
-  // Throw if the wrong type of ArrayBufferView is passed in
-  // (Part of the Web Crypto API spec)
-  switch (JS_GetArrayBufferViewType(view)) {
-    case TYPE_INT8:
-    case TYPE_UINT8:
-    case TYPE_UINT8_CLAMPED:
-    case TYPE_INT16:
-    case TYPE_UINT16:
-    case TYPE_INT32:
-    case TYPE_UINT32:
-      break;
-    default:
-      return NS_ERROR_DOM_TYPE_MISMATCH_ERR;
-  }
-
-  uint32_t dataLen = JS_GetTypedArrayByteLength(view);
-
-  if (dataLen == 0) {
-    NS_WARNING("ArrayBufferView length is 0, cannot continue");
-    return NS_OK;
-  } else if (dataLen > 65536) {
-    return NS_ERROR_DOM_QUOTA_EXCEEDED_ERR;
-  }
-
-  void *dataptr = JS_GetArrayBufferViewData(view);
-  NS_ENSURE_TRUE(dataptr, NS_ERROR_FAILURE);
-  uint8_t* data = static_cast<uint8_t*>(dataptr);
-
-  nsresult rv = GetRandomValues(data, dataLen);
-  NS_ENSURE_SUCCESS(rv, rv);
-
-  *_retval = OBJECT_TO_JSVAL(view);
-  return NS_OK;
-}
-
 JSObject *
 Crypto::GetRandomValues(JSContext* aCx, ArrayBufferView& aArray, ErrorResult& aRv)
 {
   NS_ABORT_IF_FALSE(NS_IsMainThread(), "Called on the wrong thread");
-  LOGI("%s enter", __func__);
 
   JS::Rooted<JSObject*> view(aCx, aArray.Obj());
 
@@ -129,7 +75,6 @@ Crypto::GetRandomValues(JSContext* aCx, ArrayBufferView& aArray, ErrorResult& aR
   }
 
   uint32_t dataLen = aArray.Length();
-  LOGI("%s length=%d", __func__, dataLen);
   if (dataLen == 0) {
     NS_WARNING("ArrayBufferView length is 0, cannot continue");
     return aArray.Obj();
@@ -141,7 +86,6 @@ Crypto::GetRandomValues(JSContext* aCx, ArrayBufferView& aArray, ErrorResult& aR
   uint8_t* data = reinterpret_cast<uint8_t*>(aArray.Data());
   GetRandomValues(data, dataLen);
 
-  LOGI("%s exit", __func__);
   return aArray.Obj();
 }
 
@@ -175,68 +119,71 @@ Crypto::GetRandomValues(uint8_t* aData, uint32_t aDataLen)
 // Stub out the legacy nsIDOMCrypto methods. The actual
 // implementations are in security/manager/ssl/src/nsCrypto.{cpp,h}
 
-NS_IMETHODIMP
-Crypto::GetVersion(nsAString & aVersion)
+bool
+Crypto::EnableSmartCardEvents()
 {
-  return NS_ERROR_NOT_IMPLEMENTED;
+  return false;
 }
 
-NS_IMETHODIMP
-Crypto::GetEnableSmartCardEvents(bool *aEnableSmartCardEvents)
-{
-  return NS_ERROR_NOT_IMPLEMENTED;
-}
-
-NS_IMETHODIMP
+void
 Crypto::SetEnableSmartCardEvents(bool aEnableSmartCardEvents)
 {
-  return NS_ERROR_NOT_IMPLEMENTED;
+  // NOT_IMPLEMENTED
 }
 
-NS_IMETHODIMP
-Crypto::GenerateCRMFRequest(nsIDOMCRMFObject * *_retval)
+void
+Crypto::GetVersion(nsAString& aVersion)
 {
-  return NS_ERROR_NOT_IMPLEMENTED;
+  // NOT_IMPLEMENTED
 }
 
-NS_IMETHODIMP
-Crypto::ImportUserCertificates(const nsAString & nickname,
-                               const nsAString & cmmfResponse,
-                               bool doForcedBackup, nsAString & _retval)
+already_AddRefed<nsIDOMCRMFObject>
+Crypto::GenerateCRMFRequest()
 {
-  return NS_ERROR_NOT_IMPLEMENTED;
+  // NOT_IMPLEMENTED
+  return nullptr;
 }
 
-NS_IMETHODIMP
-Crypto::PopChallengeResponse(const nsAString & challenge,
-                             nsAString & _retval)
+void
+Crypto::ImportUserCertificates(const nsAString& aNickname,
+                               const nsAString& aCmmfResponse,
+                                     bool aDoForcedBackup,
+                                     nsString& aRetval)
 {
-  return NS_ERROR_NOT_IMPLEMENTED;
+  // NOT_IMPLEMENTED
 }
 
-NS_IMETHODIMP
-Crypto::Random(int32_t numBytes, nsAString & _retval)
+void
+Crypto::PopChallengeResponse(const nsAString& aChallenge,
+                             nsString& aRetval)
 {
-  return NS_ERROR_NOT_IMPLEMENTED;
+  // NOT_IMPLEMENTED
 }
 
-NS_IMETHODIMP
-Crypto::SignText(const nsAString & stringToSign, const nsAString & caOption,
-                 nsAString & _retval)
+void
+Crypto::Random(int32_t aNumBytes, nsString& aRetval)
 {
-  return NS_ERROR_NOT_IMPLEMENTED;
+  // NOT_IMPLEMENTED
 }
 
-NS_IMETHODIMP
+void
+Crypto::SignText(const nsAString& aStringToSign,
+                 const nsAString& aCaOption,
+                       nsString& aRetval)
+{
+  // NOT_IMPLEMENTED
+}
+
+void
 Crypto::Logout()
 {
-  return NS_ERROR_NOT_IMPLEMENTED;
+  // NOT_IMPLEMENTED
 }
 
-NS_IMETHODIMP
+void
 Crypto::DisableRightClick()
 {
-  return NS_ERROR_NOT_IMPLEMENTED;
+  // NOT_IMPLEMENTED
 }
 #endif
 

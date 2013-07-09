@@ -367,7 +367,7 @@ interface nsIDOMWindow : nsISupports
 
   readonly attribute boolean                            closed;
 
-  readonly attribute nsIDOMCrypto                       crypto;
+  readonly attribute nsISupports                        crypto;
   readonly attribute nsIDOMPkcs11                       pkcs11;
 
   // XXX Shouldn't this be in nsIDOMChromeWindow?

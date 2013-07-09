@@ -406,11 +406,15 @@ webidl_files += \
   $(NULL)
 endif
 
-# ifdef MOZ_DISABLE_CRYPTOLEGACY
+ifdef MOZ_DISABLE_CRYPTOLEGACY
 webidl_files += \
   WebCrypto.webidl \
   $(NULL)
-# endif
+else
+  webidl_files += \
+  CryptoLegacy.webidl \
+  $(NULL)
+endif
 
 ifdef ENABLE_TESTS
 test_webidl_files := \

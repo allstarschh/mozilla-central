@@ -168,7 +168,6 @@
 #include "nsIDOMXULCommandDispatcher.h"
 #ifndef MOZ_DISABLE_CRYPTOLEGACY
 #include "nsIDOMCRMFObject.h"
-#include "nsIDOMCryptoLegacy.h"
 #endif
 #include "nsIControllers.h"
 #include "nsISelection.h"

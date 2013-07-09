@@ -84,7 +84,6 @@ interface nsIDOMRange;
 
 // Crypto
 interface nsIDOMCRMFObject;
-interface nsIDOMCrypto;
 interface nsIDOMPkcs11;
 
 // Used font face (for inspector)

@@ -19,20 +19,44 @@
 namespace mozilla {
 namespace dom {
 
-class Crypto : public nsIDOMCrypto,
+class Crypto : public nsISupports,
                public nsWrapperCache
 {
 public:
   Crypto(nsPIDOMWindow *aWindow);
   virtual ~Crypto();
 
-  NS_DECL_NSIDOMCRYPTO
-
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
   NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS(Crypto)
 
   JSObject *
   GetRandomValues(JSContext* aCx, ArrayBufferView& aArray, ErrorResult& aRv);
+
+#ifndef MOZ_DISABLE_CRYPTOLEGACY
+  bool EnableSmartCardEvents();
+  void SetEnableSmartCardEvents(bool aEnableSmartCardEvents);
+
+  void GetVersion(nsAString& aVersion);
+
+  already_AddRefed<nsIDOMCRMFObject> GenerateCRMFRequest();
+
+  void ImportUserCertificates(const nsAString& aNickName,
+                              const nsAString& aCmmfResponse,
+                                    bool aDoForcedBackup,
+                                    nsString& aRetVal);
+
+  void PopChallengeResponse(const nsAString& aChallenge, nsString& aRetVal);
+
+  void Random(int32_t aNumBytes, nsString& aRetVal);
+
+  void SignText(const nsAString& aStringToSign,
+                const nsAString& aCaOption,
+                      nsString& aRetVal);
+
+  void Logout();
+
+  void DisableRightClick();
+#endif
 
   // WebIDL
 

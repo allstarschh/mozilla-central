@@ -87,7 +87,6 @@
 #include "nsIHTMLDocument.h"
 #include "nsIDOMHTMLDocument.h"
 #include "nsIDOMHTMLElement.h"
-#include "Crypto.h"
 #include "nsIDOMDocument.h"
 #include "nsIDOMElement.h"
 #include "nsIDOMEvent.h"
@@ -237,6 +236,10 @@
 #include "mozilla/dom/SpeechSynthesis.h"
 #endif
 
+#ifndef MOZ_DISABLE_CRYPTOLEGACY
+#include "nsCrypto.h"
+#endif
+
 // Apple system headers seem to have a check() macro.  <sigh>
 #ifdef check
 #undef check
@@ -245,6 +248,7 @@
 
 #ifdef ANDROID
 #include <android/log.h>
+#define LOGI(args...)  __android_log_print(ANDROID_LOG_INFO, "GlobalWindow", args)
 #endif
 
 #ifdef PR_LOGGING
@@ -2211,8 +2215,8 @@ nsGlobalWindow::SetNewDocument(nsIDocument* aDocument,
 #ifndef MOZ_DISABLE_CRYPTOLEGACY
   // clear smartcard events, our document has gone away.
   if (mCrypto) {
-    nsresult rv = mCrypto->SetEnableSmartCardEvents(false);
-    NS_ENSURE_SUCCESS(rv, rv);
+    nsRefPtr<nsCrypto> crypto = static_cast<nsCrypto*>(mCrypto.get());
+    crypto->SetEnableSmartCardEvents(false);
   }
 #endif
 
@@ -3797,7 +3801,7 @@ nsGlobalWindow::GetApplicationCache(nsIDOMOfflineResourceList **aApplicationCach
 }
 
 NS_IMETHODIMP
-nsGlobalWindow::GetCrypto(nsIDOMCrypto** aCrypto)
+nsGlobalWindow::GetCrypto(nsISupports** aCrypto)
 {
   FORWARD_TO_OUTER(GetCrypto, (aCrypto), NS_ERROR_NOT_INITIALIZED);
 

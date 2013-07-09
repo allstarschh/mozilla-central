@@ -15,14 +15,18 @@
 #include "nsString.h"
 #include "jsapi.h"
 #include "nsIPrincipal.h"
+#include "mozilla/ErrorResult.h"
+#include "mozilla/dom/TypedArray.h"
 
 #define NS_CRYPTO_CID \
   {0x929d9320, 0x251e, 0x11d4, { 0x8a, 0x7c, 0x00, 0x60, 0x08, 0xc8, 0x44, 0xc3} }
 #define PSM_VERSION_STRING "2.4"
 
+using mozilla::dom::ArrayBufferView;
+using mozilla::ErrorResult;
+
 class nsIPSMComponent;
 class nsIDOMScriptObjectFactory;
-
 
 class nsCRMFObject : public nsIDOMCRMFObject
 {
@@ -50,11 +54,37 @@ public:
 
   NS_DECL_ISUPPORTS_INHERITED
 
-  // If legacy DOM crypto is enabled this is the class that actually
-  // implements the legacy methods.
-  NS_DECL_NSIDOMCRYPTO
+
+  JSObject *
+  GetRandomValues(JSContext* aCx, ArrayBufferView& aArray, ErrorResult& aRv);
+
+  bool EnableSmartCardEvents();
+  void SetEnableSmartCardEvents(bool aEnableSmartCardEvents);
+
+  void GetVersion(nsAString& aVersion);
+
+  already_AddRefed<nsIDOMCRMFObject> GenerateCRMFRequest();
+
+  void ImportUserCertificates(const nsAString& aNickName,
+                              const nsAString& aCmmfResponse,
+                                    bool aDoForcedBackup,
+                                    nsString& aRetVal);
+
+  void PopChallengeResponse(const nsAString& aChallenge, nsString& aRetVal);
+
+  void Random(int32_t aNumBytes, nsString& aRetVal);
+
+  void SignText(const nsAString& aStringToSign,
+                const nsAString& aCaOption,
+                      nsString& aRetVal);
+
+  void Logout();
+
+  void DisableRightClick();
 
 private:
+  NS_IMETHODIMP generateCRMFRequest(nsIDOMCRMFObject **_retval);
+
   static already_AddRefed<nsIPrincipal> GetScriptPrincipal(JSContext *cx);
 
   bool mEnableSmartCardEvents;
