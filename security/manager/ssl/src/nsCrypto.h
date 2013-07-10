@@ -15,15 +15,10 @@
 #include "nsString.h"
 #include "jsapi.h"
 #include "nsIPrincipal.h"
-#include "mozilla/ErrorResult.h"
-#include "mozilla/dom/TypedArray.h"
 
 #define NS_CRYPTO_CID \
   {0x929d9320, 0x251e, 0x11d4, { 0x8a, 0x7c, 0x00, 0x60, 0x08, 0xc8, 0x44, 0xc3} }
 #define PSM_VERSION_STRING "2.4"
-
-using mozilla::dom::ArrayBufferView;
-using mozilla::ErrorResult;
 
 class nsIPSMComponent;
 class nsIDOMScriptObjectFactory;
@@ -44,7 +39,6 @@ private:
 
   nsString mBase64Request;
 };
-
 
 class nsCrypto: public mozilla::dom::Crypto
 {
