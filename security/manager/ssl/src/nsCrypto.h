@@ -54,37 +54,11 @@ public:
 
   NS_DECL_ISUPPORTS_INHERITED
 
-
-  JSObject *
-  GetRandomValues(JSContext* aCx, ArrayBufferView& aArray, ErrorResult& aRv);
-
-  bool EnableSmartCardEvents();
-  void SetEnableSmartCardEvents(bool aEnableSmartCardEvents);
-
-  void GetVersion(nsAString& aVersion);
-
-  already_AddRefed<nsIDOMCRMFObject> GenerateCRMFRequest();
-
-  void ImportUserCertificates(const nsAString& aNickName,
-                              const nsAString& aCmmfResponse,
-                                    bool aDoForcedBackup,
-                                    nsString& aRetVal);
-
-  void PopChallengeResponse(const nsAString& aChallenge, nsString& aRetVal);
-
-  void Random(int32_t aNumBytes, nsString& aRetVal);
-
-  void SignText(const nsAString& aStringToSign,
-                const nsAString& aCaOption,
-                      nsString& aRetVal);
-
-  void Logout();
-
-  void DisableRightClick();
+  // If legacy DOM crypto is enabled this is the class that actually
+  // implements the legacy methods.
+  NS_DECL_NSIDOMCRYPTO
 
 private:
-  NS_IMETHODIMP generateCRMFRequest(nsIDOMCRMFObject **_retval);
-
   static already_AddRefed<nsIPrincipal> GetScriptPrincipal(JSContext *cx);
 
   bool mEnableSmartCardEvents;

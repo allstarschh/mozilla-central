@@ -26,6 +26,7 @@ namespace dom {
 NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(Crypto)
   NS_WRAPPERCACHE_INTERFACE_MAP_ENTRY
   NS_INTERFACE_MAP_ENTRY(nsISupports)
+  NS_INTERFACE_MAP_ENTRY(nsIDOMCrypto)
 NS_INTERFACE_MAP_END
 
 NS_IMPL_CYCLE_COLLECTING_ADDREF(Crypto)
@@ -51,6 +52,63 @@ Crypto::WrapObject(JSContext* aCx, JS::Handle<JSObject*> aScope)
   return CryptoBinding::Wrap(aCx, aScope, this);
 }
 
+// XPIDL
+NS_IMETHODIMP
+Crypto::GetRandomValues(const JS::Value& aData, JSContext *cx,
+                        JS::Value* _retval)
+{
+  NS_ABORT_IF_FALSE(NS_IsMainThread(), "Called on the wrong thread");
+
+  // Make sure this is a JavaScript object
+  if (!aData.isObject()) {
+    return NS_ERROR_DOM_NOT_OBJECT_ERR;
+  }
+
+  JS::Rooted<JSObject*> view(cx, &aData.toObject());
+
+  // Make sure this object is an ArrayBufferView
+  if (!JS_IsTypedArrayObject(view)) {
+    return NS_ERROR_DOM_TYPE_MISMATCH_ERR;
+  }
+
+  // Throw if the wrong type of ArrayBufferView is passed in
+  // (Part of the Web Crypto API spec)
+  switch (JS_GetArrayBufferViewType(view)) {
+    case TYPE_INT8:
+    case TYPE_UINT8:
+    case TYPE_UINT8_CLAMPED:
+    case TYPE_INT16:
+    case TYPE_UINT16:
+    case TYPE_INT32:
+    case TYPE_UINT32:
+      break;
+    default:
+      return NS_ERROR_DOM_TYPE_MISMATCH_ERR;
+  }
+
+  uint32_t dataLen = JS_GetTypedArrayByteLength(view);
+
+  if (dataLen == 0) {
+    NS_WARNING("ArrayBufferView length is 0, cannot continue");
+    return NS_OK;
+  } else if (dataLen > 65536) {
+    return NS_ERROR_DOM_QUOTA_EXCEEDED_ERR;
+  }
+
+  void *dataptr = JS_GetArrayBufferViewData(view);
+  NS_ENSURE_TRUE(dataptr, NS_ERROR_FAILURE);
+  unsigned char* data =
+    static_cast<unsigned char*>(dataptr);
+
+  nsresult rv = GetRandomValues(data, dataLen);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  *_retval = OBJECT_TO_JSVAL(view);
+
+  return NS_OK;
+}
+
+// WebIDL
 JSObject *
 Crypto::GetRandomValues(JSContext* aCx, ArrayBufferView& aArray, ErrorResult& aRv)
 {
@@ -84,12 +142,16 @@ Crypto::GetRandomValues(JSContext* aCx, ArrayBufferView& aArray, ErrorResult& aR
   }
 
   uint8_t* data = reinterpret_cast<uint8_t*>(aArray.Data());
-  GetRandomValues(data, dataLen);
+  nsresult rv = GetRandomValues(data, dataLen);
+  if (NS_FAILED(rv)) {
+    aRv.Throw(rv);
+    return nullptr;
+  }
 
   return aArray.Obj();
 }
 
-NS_IMETHODIMP
+nsresult
 Crypto::GetRandomValues(uint8_t* aData, uint32_t aDataLen)
 {
   if (XRE_GetProcessType() != GeckoProcessType_Default) {
@@ -119,71 +181,168 @@ Crypto::GetRandomValues(uint8_t* aData, uint32_t aDataLen)
 // Stub out the legacy nsIDOMCrypto methods. The actual
 // implementations are in security/manager/ssl/src/nsCrypto.{cpp,h}
 
+// XPIDL binding
+
+NS_IMETHODIMP
+Crypto::GetVersion(nsAString & aVersion)
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+Crypto::GetEnableSmartCardEvents(bool *aEnableSmartCardEvents)
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+Crypto::SetEnableSmartCardEvents(bool aEnableSmartCardEvents)
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+Crypto::GenerateCRMFRequest(nsIDOMCRMFObject * *_retval)
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+Crypto::ImportUserCertificates(const nsAString & nickname,
+                               const nsAString & cmmfResponse,
+                               bool doForcedBackup, nsAString & _retval)
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+Crypto::PopChallengeResponse(const nsAString & challenge,
+                             nsAString & _retval)
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+Crypto::Random(int32_t numBytes, nsAString & _retval)
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+Crypto::SignText(const nsAString & stringToSign, const nsAString & caOption,
+                 nsAString & _retval)
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+Crypto::Logout()
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+Crypto::DisableRightClick()
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+// WebIDL binding
+
 bool
 Crypto::EnableSmartCardEvents()
 {
-  return false;
+  bool enable;
+  GetEnableSmartCardEvents(&enable);
+  return enable;
 }
 
 void
-Crypto::SetEnableSmartCardEvents(bool aEnableSmartCardEvents)
+Crypto::SetEnableSmartCardEvents(bool aEnableSmartCardEvents, ErrorResult& aRv)
 {
-  // NOT_IMPLEMENTED
+  nsresult rv = SetEnableSmartCardEvents(aEnableSmartCardEvents);
+  if (NS_FAILED(rv)) {
+    aRv.Throw(rv);
+  }
 }
 
 void
-Crypto::GetVersion(nsAString& aVersion)
+Crypto::GetVersion(nsAString& aVersion, ErrorResult& aRv)
 {
-  // NOT_IMPLEMENTED
+  GetVersion(aVersion);
 }
 
 already_AddRefed<nsIDOMCRMFObject>
-Crypto::GenerateCRMFRequest()
+Crypto::GenerateCRMFRequest(ErrorResult& aRv)
 {
-  // NOT_IMPLEMENTED
-  return nullptr;
+  nsCOMPtr<nsIDOMCRMFObject> crmf;
+  nsresult rv = GenerateCRMFRequest(getter_AddRefs(crmf));
+  NS_ENSURE_SUCCESS(rv, nullptr);
+  return crmf.forget();
 }
 
 void
-Crypto::ImportUserCertificates(const nsAString& aNickname,
+Crypto::ImportUserCertificates(const nsAString& aNickName,
                                const nsAString& aCmmfResponse,
                                      bool aDoForcedBackup,
-                                     nsString& aRetval)
+                                     nsString& aRetVal,
+                                     ErrorResult& aRv)
 {
-  // NOT_IMPLEMENTED
+  nsresult rv =
+    ImportUserCertificates(aNickName, aCmmfResponse, aDoForcedBackup, aRetVal);
+  if (NS_FAILED(rv)) {
+    aRv.Throw(rv);
+  }
 }
 
 void
 Crypto::PopChallengeResponse(const nsAString& aChallenge,
-                             nsString& aRetval)
+                                   nsString& aRetVal,
+                                   ErrorResult& aRv)
 {
-  // NOT_IMPLEMENTED
+  nsresult rv = PopChallengeResponse(aChallenge, aRetVal);
+  if (NS_FAILED(rv)) {
+    aRv.Throw(rv);
+  }
 }
 
 void
-Crypto::Random(int32_t aNumBytes, nsString& aRetval)
+Crypto::Random(int32_t aNumBytes, nsString& aRetVal, ErrorResult& aRv)
 {
-  // NOT_IMPLEMENTED
+  nsresult rv = Random(aNumBytes, aRetVal);
+  if (NS_FAILED(rv)) {
+    aRv.Throw(rv);
+  }
 }
 
 void
 Crypto::SignText(const nsAString& aStringToSign,
                  const nsAString& aCaOption,
-                       nsString& aRetval)
+                       nsString& aRetVal,
+                       ErrorResult& aRv)
 {
-  // NOT_IMPLEMENTED
+  nsresult rv = SignText(aStringToSign, aCaOption, aRetVal);
+  if (NS_FAILED(rv)) {
+    aRv.Throw(rv);
+  }
 }
 
 void
-Crypto::Logout()
+Crypto::Logout(ErrorResult& aRv)
 {
-  // NOT_IMPLEMENTED
+  nsresult rv = Logout();
+  if (NS_FAILED(rv)) {
+    aRv.Throw(rv);
+  }
 }
 
 void
-Crypto::DisableRightClick()
+Crypto::DisableRightClick(ErrorResult& aRv)
 {
-  // NOT_IMPLEMENTED
+  nsresult rv = DisableRightClick();
+  if (NS_FAILED(rv)) {
+    aRv.Throw(rv);
+  }
 }
 #endif
 

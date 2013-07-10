@@ -8,6 +8,7 @@
 #include "nsIDOMCrypto.h"
 #else
 #include "nsIDOMCryptoLegacy.h"
+#include "nsIDOMCRMFObject.h"
 #endif
 
 #include "nsPIDOMWindow.h"
@@ -19,43 +20,54 @@
 namespace mozilla {
 namespace dom {
 
-class Crypto : public nsISupports,
+#ifndef MOZ_DISABLE_CRYPTOLEGACY
+#undef  IMETHOD_VISIBILITY
+#define IMETHOD_VISIBILITY NS_VISIBILITY_DEFAULT
+#endif
+
+class Crypto : public nsIDOMCrypto,
                public nsWrapperCache
 {
 public:
   Crypto(nsPIDOMWindow *aWindow);
   virtual ~Crypto();
 
+  NS_DECL_NSIDOMCRYPTO
+
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
   NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS(Crypto)
 
-  JSObject *
+  virtual JSObject *
   GetRandomValues(JSContext* aCx, ArrayBufferView& aArray, ErrorResult& aRv);
 
 #ifndef MOZ_DISABLE_CRYPTOLEGACY
-  bool EnableSmartCardEvents();
-  void SetEnableSmartCardEvents(bool aEnableSmartCardEvents);
+  virtual bool EnableSmartCardEvents();
+  virtual void SetEnableSmartCardEvents(bool aEnableSmartCardEvents, ErrorResult& aRv);
 
-  void GetVersion(nsAString& aVersion);
+  virtual void GetVersion(nsAString& aVersion, ErrorResult& aRv);
 
-  already_AddRefed<nsIDOMCRMFObject> GenerateCRMFRequest();
+  virtual already_AddRefed<nsIDOMCRMFObject> GenerateCRMFRequest(ErrorResult& aRv);
 
-  void ImportUserCertificates(const nsAString& aNickName,
-                              const nsAString& aCmmfResponse,
-                                    bool aDoForcedBackup,
-                                    nsString& aRetVal);
+  virtual void ImportUserCertificates(const nsAString& aNickName,
+                                      const nsAString& aCmmfResponse,
+                                            bool aDoForcedBackup,
+                                            nsString& aRetVal,
+                                            ErrorResult& aRv);
 
-  void PopChallengeResponse(const nsAString& aChallenge, nsString& aRetVal);
+  virtual void PopChallengeResponse(const nsAString& aChallenge,
+                                          nsString& aRetVal,
+                                          ErrorResult& aRv);
 
-  void Random(int32_t aNumBytes, nsString& aRetVal);
+  virtual void Random(int32_t aNumBytes, nsString& aRetVal, ErrorResult& aRv);
 
-  void SignText(const nsAString& aStringToSign,
-                const nsAString& aCaOption,
-                      nsString& aRetVal);
+  virtual void SignText(const nsAString& aStringToSign,
+                        const nsAString& aCaOption,
+                              nsString& aRetVal,
+                              ErrorResult& aRv);
 
-  void Logout();
+  virtual void Logout(ErrorResult& aRv);
 
-  void DisableRightClick();
+  virtual void DisableRightClick(ErrorResult& aRv);
 #endif
 
   // WebIDL
@@ -73,11 +85,16 @@ public:
   GetRandomValues(uint32_t aLength);
 
 private:
-  NS_IMETHODIMP
+  nsresult
   GetRandomValues(uint8_t* aData, uint32_t aDataLen);
 
   nsCOMPtr<nsPIDOMWindow> mWindow;
 };
+
+#ifndef MOZ_DISABLE_CRYPTOLEGACY
+#undef  IMETHOD_VISIBILITY
+#define IMETHOD_VISIBILITY NS_VISIBILITY_HIDDEN
+#endif
 
 } // namespace dom
 } // namespace mozilla

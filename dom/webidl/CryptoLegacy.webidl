@@ -14,18 +14,34 @@ interface RandomSource {
 
 [NoInterfaceObject]
 interface CryptoLegacy {
+  [GetterThrows]
   readonly attribute DOMString version;
+
+  [SetterThrows]
   attribute boolean enableSmartCardEvents;
 
+  [Throws]
   CRMFObject generateCRMFRequest(/* ... */);
+
+  [Throws]
   DOMString importUserCertificates(DOMString nickname,
                                    DOMString cmmfResponse,
                                    boolean doForcedBackup);
+
+  [Throws]
   DOMString popChallengeResponse(DOMString challenge);
+
+  [Throws]
   DOMString random(long numBytes);
+
+  [Throws]
   DOMString signText(DOMString stringToSign,
                      DOMString caOption /* ... */);
+
+  [Throws]
   void logout();
+
+  [Throws]
   void disableRightClick();
 };
 

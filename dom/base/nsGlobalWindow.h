@@ -96,6 +96,7 @@
 class nsIContent;
 class nsIDocument;
 class nsPresContext;
+class nsIDOMCrypto;
 class nsIDOMEvent;
 class nsIScrollableFrame;
 class nsIControllers;
@@ -1187,7 +1188,7 @@ protected:
   nsString                      mStatus;
   nsString                      mDefaultStatus;
   nsGlobalWindowObserver*       mObserver;
-  nsCOMPtr<nsISupports>         mCrypto;
+  nsCOMPtr<nsIDOMCrypto>        mCrypto;
 
   nsCOMPtr<nsIDOMStorage>      mLocalStorage;
   nsCOMPtr<nsIDOMStorage>      mSessionStorage;
