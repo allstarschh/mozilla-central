@@ -4,7 +4,6 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 interface CRMFObject;
-//interface CRMFObject;
 
 [NoInterfaceObject]
 interface RandomSource {
@@ -21,7 +20,7 @@ interface CryptoLegacy {
   attribute boolean enableSmartCardEvents;
 
   [Throws]
-  CRMFObject generateCRMFRequest(/* ... */);
+  CRMFObject generateCRMFRequest(DOMString... args);
 
   [Throws]
   DOMString importUserCertificates(DOMString nickname,
@@ -36,7 +35,8 @@ interface CryptoLegacy {
 
   [Throws]
   DOMString signText(DOMString stringToSign,
-                     DOMString caOption /* ... */);
+                     DOMString caOption,
+                     DOMString... args);
 
   [Throws]
   void logout();

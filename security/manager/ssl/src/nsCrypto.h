@@ -15,6 +15,12 @@
 #include "nsString.h"
 #include "jsapi.h"
 #include "nsIPrincipal.h"
+#include "mozilla/dom/BindingDeclarations.h"
+#include "mozilla/dom/TypedArray.h"
+#include "mozilla/ErrorResult.h"
+
+using namespace mozilla;
+using namespace mozilla::dom;
 
 #define NS_CRYPTO_CID \
   {0x929d9320, 0x251e, 0x11d4, { 0x8a, 0x7c, 0x00, 0x60, 0x08, 0xc8, 0x44, 0xc3} }
@@ -51,6 +57,36 @@ public:
   // If legacy DOM crypto is enabled this is the class that actually
   // implements the legacy methods.
   NS_DECL_NSIDOMCRYPTO
+
+  virtual bool EnableSmartCardEvents();
+  virtual void SetEnableSmartCardEvents(bool aEnable, ErrorResult& aRv);
+
+  virtual void GetVersion(nsAString& aVersion, ErrorResult& aRv);
+
+  virtual already_AddRefed<nsIDOMCRMFObject>
+  GenerateCRMFRequest(const Sequence<nsString>& aArgs, ErrorResult& aRv);
+
+  virtual void ImportUserCertificates(const nsAString& aNickname,
+                                      const nsAString& aCmmfResponse,
+                                            bool aDoForcedBackup,
+                                            nsAString& aReturn,
+                                            ErrorResult& aRv);
+
+  virtual void PopChallengeResponse(const nsAString& aChallenge,
+                                          nsAString& aReturn,
+                                          ErrorResult& aRv);
+
+  virtual void Random(int32_t aNumBytes, nsAString& aReturn, ErrorResult& aRv);
+
+  virtual void SignText(const nsAString& aStringToSign,
+                        const nsAString& aCaOption,
+                        const Sequence<nsString>& aArgs,
+                              nsAString& aReturn,
+                              ErrorResult& aRv);
+
+  virtual void Logout(ErrorResult& aRv);
+
+  virtual void DisableRightClick(ErrorResult& aRv);
 
 private:
   static already_AddRefed<nsIPrincipal> GetScriptPrincipal(JSContext *cx);

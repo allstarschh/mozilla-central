@@ -34,8 +34,7 @@ NS_IMPL_CYCLE_COLLECTING_RELEASE(Crypto)
 
 NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE_1(Crypto, mWindow)
 
-Crypto::Crypto(nsPIDOMWindow *aWindow)
-  : mWindow(aWindow)
+Crypto::Crypto()
 {
   MOZ_COUNT_CTOR(Crypto);
   SetIsDOMBinding();
@@ -44,6 +43,12 @@ Crypto::Crypto(nsPIDOMWindow *aWindow)
 Crypto::~Crypto()
 {
   MOZ_COUNT_DTOR(Crypto);
+}
+
+void
+Crypto::Init(nsIDOMWindow* aWindow)
+{
+  mWindow = static_cast<nsPIDOMWindow*>(aWindow);
 }
 
 /* virtual */ JSObject*
@@ -181,8 +186,6 @@ Crypto::GetRandomValues(uint8_t* aData, uint32_t aDataLen)
 // Stub out the legacy nsIDOMCrypto methods. The actual
 // implementations are in security/manager/ssl/src/nsCrypto.{cpp,h}
 
-// XPIDL binding
-
 NS_IMETHODIMP
 Crypto::GetVersion(nsAString & aVersion)
 {
@@ -245,104 +248,6 @@ NS_IMETHODIMP
 Crypto::DisableRightClick()
 {
   return NS_ERROR_NOT_IMPLEMENTED;
-}
-
-// WebIDL binding
-
-bool
-Crypto::EnableSmartCardEvents()
-{
-  bool enable;
-  GetEnableSmartCardEvents(&enable);
-  return enable;
-}
-
-void
-Crypto::SetEnableSmartCardEvents(bool aEnableSmartCardEvents, ErrorResult& aRv)
-{
-  nsresult rv = SetEnableSmartCardEvents(aEnableSmartCardEvents);
-  if (NS_FAILED(rv)) {
-    aRv.Throw(rv);
-  }
-}
-
-void
-Crypto::GetVersion(nsAString& aVersion, ErrorResult& aRv)
-{
-  GetVersion(aVersion);
-}
-
-already_AddRefed<nsIDOMCRMFObject>
-Crypto::GenerateCRMFRequest(ErrorResult& aRv)
-{
-  nsCOMPtr<nsIDOMCRMFObject> crmf;
-  nsresult rv = GenerateCRMFRequest(getter_AddRefs(crmf));
-  NS_ENSURE_SUCCESS(rv, nullptr);
-  return crmf.forget();
-}
-
-void
-Crypto::ImportUserCertificates(const nsAString& aNickName,
-                               const nsAString& aCmmfResponse,
-                                     bool aDoForcedBackup,
-                                     nsString& aRetVal,
-                                     ErrorResult& aRv)
-{
-  nsresult rv =
-    ImportUserCertificates(aNickName, aCmmfResponse, aDoForcedBackup, aRetVal);
-  if (NS_FAILED(rv)) {
-    aRv.Throw(rv);
-  }
-}
-
-void
-Crypto::PopChallengeResponse(const nsAString& aChallenge,
-                                   nsString& aRetVal,
-                                   ErrorResult& aRv)
-{
-  nsresult rv = PopChallengeResponse(aChallenge, aRetVal);
-  if (NS_FAILED(rv)) {
-    aRv.Throw(rv);
-  }
-}
-
-void
-Crypto::Random(int32_t aNumBytes, nsString& aRetVal, ErrorResult& aRv)
-{
-  nsresult rv = Random(aNumBytes, aRetVal);
-  if (NS_FAILED(rv)) {
-    aRv.Throw(rv);
-  }
-}
-
-void
-Crypto::SignText(const nsAString& aStringToSign,
-                 const nsAString& aCaOption,
-                       nsString& aRetVal,
-                       ErrorResult& aRv)
-{
-  nsresult rv = SignText(aStringToSign, aCaOption, aRetVal);
-  if (NS_FAILED(rv)) {
-    aRv.Throw(rv);
-  }
-}
-
-void
-Crypto::Logout(ErrorResult& aRv)
-{
-  nsresult rv = Logout();
-  if (NS_FAILED(rv)) {
-    aRv.Throw(rv);
-  }
-}
-
-void
-Crypto::DisableRightClick(ErrorResult& aRv)
-{
-  nsresult rv = DisableRightClick();
-  if (NS_FAILED(rv)) {
-    aRv.Throw(rv);
-  }
 }
 #endif
 

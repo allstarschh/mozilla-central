@@ -6,10 +6,12 @@
 #include "domstubs.idl"
 
 interface nsIDOMCRMFObject;
+interface nsIDOMWindow;
 
-[scriptable, uuid(e1df1d4d-41ef-4225-934a-107c5d612686)]
+[scriptable, uuid(0011b656-a303-469b-a358-185901cd30be)]
 interface nsIDOMCrypto : nsISupports
 {
+  [noscript, notxpcom]void   init(in nsIDOMWindow window);
   readonly attribute DOMString        version;
   attribute boolean         enableSmartCardEvents;
 
