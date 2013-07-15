@@ -43,7 +43,9 @@ public:
   virtual void GetVersion(nsAString& aVersion, ErrorResult& aRv) = 0;
 
   virtual already_AddRefed<nsIDOMCRMFObject>
-  GenerateCRMFRequest(const Sequence<nsString>& aArgs, ErrorResult& aRv) = 0;
+  GenerateCRMFRequest(      JSContext* aContext,
+                      const Sequence<nsString>& aArgs,
+                            ErrorResult& aRv) = 0;
 
   virtual void ImportUserCertificates(const nsAString& aNickname,
                                       const nsAString& aCmmfResponse,
@@ -57,7 +59,8 @@ public:
 
   virtual void Random(int32_t aNumBytes, nsAString& aReturn, ErrorResult& aRv) = 0;
 
-  virtual void SignText(const nsAString& aStringToSign,
+  virtual void SignText(      JSContext* aContext,
+                        const nsAString& aStringToSign,
                         const nsAString& aCaOption,
                         const Sequence<nsString>& aArgs,
                               nsAString& aReturn,
@@ -73,6 +76,7 @@ public:
   nsPIDOMWindow*
   GetParentObject() const
   {
+    NS_WARNING("Crypto:GetParentObject");
     return mWindow;
   }
 
@@ -82,12 +86,11 @@ public:
   static uint8_t*
   GetRandomValues(uint32_t aLength);
 
-protected:
-  nsCOMPtr<nsPIDOMWindow> mWindow;
-
 private:
   nsresult
   GetRandomValues(uint8_t* aData, uint32_t aDataLen);
+
+  nsCOMPtr<nsPIDOMWindow> mWindow;
 };
 
 } // namespace dom

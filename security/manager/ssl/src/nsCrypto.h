@@ -19,6 +19,8 @@
 #include "mozilla/dom/TypedArray.h"
 #include "mozilla/ErrorResult.h"
 
+#include "nsWeakPtr.h"
+
 using namespace mozilla;
 using namespace mozilla::dom;
 
@@ -64,7 +66,9 @@ public:
   virtual void GetVersion(nsAString& aVersion, ErrorResult& aRv);
 
   virtual already_AddRefed<nsIDOMCRMFObject>
-  GenerateCRMFRequest(const Sequence<nsString>& aArgs, ErrorResult& aRv);
+  GenerateCRMFRequest(      JSContext* aContext,
+                      const Sequence<nsString>& aArgs,
+                            ErrorResult& aRv);
 
   virtual void ImportUserCertificates(const nsAString& aNickname,
                                       const nsAString& aCmmfResponse,
@@ -78,7 +82,8 @@ public:
 
   virtual void Random(int32_t aNumBytes, nsAString& aReturn, ErrorResult& aRv);
 
-  virtual void SignText(const nsAString& aStringToSign,
+  virtual void SignText(      JSContext* aContext,
+                        const nsAString& aStringToSign,
                         const nsAString& aCaOption,
                         const Sequence<nsString>& aArgs,
                               nsAString& aReturn,
@@ -92,6 +97,8 @@ private:
   static already_AddRefed<nsIPrincipal> GetScriptPrincipal(JSContext *cx);
 
   bool mEnableSmartCardEvents;
+
+  nsWeakPtr mWindow;
 };
 #endif // MOZ_DISABLE_CRYPTOLEGACY
 
