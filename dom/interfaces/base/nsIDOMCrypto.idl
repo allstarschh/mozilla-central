@@ -7,9 +7,8 @@
 
 interface nsIDOMWindow;
 
-[scriptable, uuid(83b614c0-bae0-4ecb-bfc7-accba3f85306)]
+[scriptable, uuid(729cfcad-11b4-4338-b97e-5c023ae295fa)]
 interface nsIDOMCrypto : nsISupports
 {
   [noscript, notxpcom]  void init(in nsIDOMWindow window);
-  [implicit_jscontext] jsval getRandomValues(in jsval aData);
 };

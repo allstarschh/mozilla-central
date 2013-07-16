@@ -73,6 +73,7 @@
 
 #include "nsNSSCertHelper.h"
 #include <algorithm>
+#include "nsWrapperCacheInlines.h"
 #endif
 
 using namespace mozilla;
@@ -268,7 +269,7 @@ nsCrypto::SetEnableSmartCardEvents(bool aEnable, ErrorResult& aRv)
   nsresult rv = NS_OK;
 
   // this has the side effect of starting the nssComponent (and initializing
-  // NSS) even if it isn't already going. Starting the nssComponent is a 
+  // NSS) even if it isn't already going. Starting the nssComponent is a
   // prerequisite for getting smartCard events.
   if (aEnable) {
     nsCOMPtr<nsINSSComponent> nssComponent(do_GetService(kNSSComponentCID, &rv));
@@ -312,20 +313,12 @@ ns_can_escrow(nsKeyGenType keyGenType)
   return (bool)(keyGenType == rsaEnc || keyGenType == ecEnc);
 }
 
-void
-nsCrypto::GetVersion(nsAString& aVersion, ErrorResult& aRv)
-{
-  aVersion.Assign(NS_LITERAL_STRING(PSM_VERSION_STRING).get());
-}
-
 //Retrieve crypto.version so that callers know what
 //version of PSM this is.
-NS_IMETHODIMP
-nsCrypto::GetVersion(nsAString& aVersion)
+void
+nsCrypto::GetVersion(nsString& aVersion)
 {
-  ErrorResult rv;
-  GetVersion(aVersion, rv);
-  return rv.ErrorCode();
+  aVersion.Assign(NS_LITERAL_STRING(PSM_VERSION_STRING));
 }
 
 /*
@@ -1852,9 +1845,16 @@ GetISupportsFromContext(JSContext *cx)
     return nullptr;
 }
 
+//The top level method which is a member of nsIDOMCrypto
+//for generate a base64 encoded CRMF request.
 already_AddRefed<nsIDOMCRMFObject>
-nsCrypto::GenerateCRMFRequest(      JSContext *aContext,
-                              const Sequence<nsString>& aArgs,
+nsCrypto::GenerateCRMFRequest(      JSContext* aContext,
+                              const nsACString& aReqDN,
+                              const nsACString& aRegToken,
+                              const nsACString& aAuthenticator,
+                              const nsACString& aEaCert,
+                              const nsACString& aJsCallback,
+                              const Sequence<nsCString>& aArgs,
                                     ErrorResult& aRv)
 {
   nsNSSShutDownPreventionLock locker;
@@ -1867,97 +1867,94 @@ nsCrypto::GenerateCRMFRequest(      JSContext *aContext,
   /*
    * Get all of the parameters.
    */
-  if (argc < 5 || ((argc-5) % 3) != 0) {
+  if (argc > 0 && argc % 3 != 0) {
     NS_WARNING("incorrect number of parameters");
     aRv.Throw(NS_ERROR_FAILURE);
     return nullptr;
   }
 
-  if (aArgs[0].IsEmpty()) {
+  if (!aReqDN.Data()) {
     NS_WARNING("no DN specified");
     aRv.Throw(NS_ERROR_FAILURE);
     return nullptr;
   }
 
-  JSString *jsString = JS_InternString(aContext, NS_ConvertUTF16toUTF8(aArgs[0]).get());
-  if (MOZ_UNLIKELY(!jsString)) {
-    aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
-    return nullptr;
-  }
-  argv[0] = STRING_TO_JSVAL(jsString);
-  JSAutoByteString reqDN(aContext, jsString);
+  JSAutoByteString reqDN;
+  reqDN.initBytes(const_cast<char*>(aReqDN.Data()));
   if (MOZ_UNLIKELY(!reqDN)) {
     aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
     return nullptr;
   }
 
   JSAutoByteString regToken;
-  if (!aArgs[1].IsEmpty()) {
-    jsString = JS_InternString(aContext, NS_ConvertUTF16toUTF8(aArgs[1]).get());
-    if (MOZ_UNLIKELY(!jsString)) {
-      aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
-      return nullptr;
-    }
-
-    argv[1] = STRING_TO_JSVAL(jsString);
-    regToken.encodeLatin1(aContext, jsString);
+  if (aRegToken.Data()) {
+    regToken.initBytes(const_cast<char*>(aRegToken.Data()));
+//    regToken.encodeLatin1(aContext, jsString);
     if (MOZ_UNLIKELY(!regToken)) {
       aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
       return nullptr;
     }
   }
-  JSAutoByteString authenticator;
-  if (!aArgs[2].IsEmpty()) {
-    jsString = JS_InternString(aContext, NS_ConvertUTF16toUTF8(aArgs[2]).get());
-    if (MOZ_UNLIKELY(!jsString)) {
-      aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
-      return nullptr;
-    }
 
-    argv[2] = STRING_TO_JSVAL(jsString);
-    authenticator.encodeLatin1(aContext, jsString);
+  JSAutoByteString authenticator;
+  if (aAuthenticator.Data()) {
+//    jsString = JS_InternString(aContext, NS_ConvertUTF16toUTF8(aArgs[2]).get());
+//    if (MOZ_UNLIKELY(!jsString)) {
+//      aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
+//      return nullptr;
+//    }
+
+//    argv[2] = STRING_TO_JSVAL(jsString);
+    authenticator.initBytes(const_cast<char*>(aAuthenticator.Data()));
+//    authenticator.encodeLatin1(aContext, jsString);
     if (MOZ_UNLIKELY(!authenticator)) {
       aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
       return nullptr;
     }
   }
-  JSAutoByteString eaCert;
-  if (!aArgs[3].IsEmpty()) {
-    jsString = JS_InternString(aContext, NS_ConvertUTF16toUTF8(aArgs[3]).get());
-    if (MOZ_UNLIKELY(!jsString)) {
-      aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
-      return nullptr;
-    }
 
-    argv[3] = STRING_TO_JSVAL(jsString);
-    eaCert.encodeLatin1(aContext, jsString);
+  JSAutoByteString eaCert;
+  if (aEaCert.Data()) {
+//    jsString = JS_InternString(aContext, NS_ConvertUTF16toUTF8(aArgs[3]).get());
+//    if (MOZ_UNLIKELY(!jsString)) {
+//      aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
+//      return nullptr;
+//    }
+
+//    argv[3] = STRING_TO_JSVAL(jsString);
+    eaCert.initBytes(const_cast<char*>(aEaCert.Data()));
+//    eaCert.encodeLatin1(aContext, jsString);
     if (MOZ_UNLIKELY(!eaCert)) {
       aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
       return nullptr;
     }
   }
-  if (!aArgs[4].IsEmpty()) {
-    JS_ReportError(aContext, "%s%s\n", JS_ERROR, "no completion "
-                   "function specified");
+
+  if (!aJsCallback.Data()) {
+    NS_WARNING("no completion function specified");
     aRv.Throw(NS_ERROR_FAILURE);
     return nullptr;
   }
-  jsString = JS_InternString(aContext, NS_ConvertUTF16toUTF8(aArgs[4]).get());
-  if (MOZ_UNLIKELY(!jsString)) {
-    aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
-    return nullptr;
-  }
+//  jsString = JS_InternString(aContext, NS_ConvertUTF16toUTF8(aArgs[4]).get());
+//  if (MOZ_UNLIKELY(!jsString)) {
+//    aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
+//    return nullptr;
+//  }
 
-  argv[4] = STRING_TO_JSVAL(jsString);
-  JSAutoByteString jsCallback(aContext, jsString);
+//  argv[4] = STRING_TO_JSVAL(jsString);
+//  JSAutoByteString jsCallback(aContext, jsString);
+  JSAutoByteString jsCallback;
+  jsCallback.initBytes(const_cast<char*>(aJsCallback.Data()));
   if (MOZ_UNLIKELY(!jsCallback)) {
     aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
     return nullptr;
   }
 
-  // TODO 2nd argument for script object
-//  JS::RootedObject script_obj(aContext, );
-//  NS_ENSURE_STATE(script_obj);
+  JS::RootedObject script_obj(aContext, GetWrapper());
+  if (MOZ_UNLIKELY(!script_obj)) {
+    aRv.Throw(NS_ERROR_UNEXPECTED);
+    return nullptr;
+  }
 
   //Put up some UI warning that someone is trying to
   //escrow the private key.
@@ -2020,7 +2017,7 @@ nsCrypto::GenerateCRMFRequest(      JSContext *aContext,
   uint32_t i;
   PK11SlotInfo *slot = nullptr;
   // Go through all of the arguments and generate the appropriate key pairs.
-  for (i=5,keyInfoIndex=0; i<argc; i+=3,keyInfoIndex++) {
+  for (i=0,keyInfoIndex=0; i<argc; i+=3,keyInfoIndex++) {
     nrv = cryptojs_ReadArgsAndGenerateKey(aContext, &argv[i], &keyids[keyInfoIndex],
                                           uiCxt, &slot, willEscrow);
 
@@ -2086,8 +2083,7 @@ nsCrypto::GenerateCRMFRequest(      JSContext *aContext,
 
   args->m_cx         = aContext;
   args->m_kungFuDeathGrip = GetISupportsFromContext(aContext);
-  //TODO script object
-//  args->m_scope      = JS_GetParent(script_obj);
+  args->m_scope      = JS_GetParent(script_obj);
 
   args->m_jsCallback.Adopt(!!jsCallback ? nsCRT::strdup(jsCallback.ptr()) : 0);
 
@@ -2104,13 +2100,6 @@ nsCrypto::GenerateCRMFRequest(      JSContext *aContext,
   return crmf.forget();
 }
 
-//The top level method which is a member of nsIDOMCrypto
-//for generate a base64 encoded CRMF request.
-NS_IMETHODIMP
-nsCrypto::GenerateCRMFRequest(nsIDOMCRMFObject** aReturn)
-{
-  return NS_ERROR_NOT_IMPLEMENTED;
-}
 
 // Reminder that we inherit the memory passed into us here.
 // An implementation to let us back up certs as an event.
@@ -2285,6 +2274,8 @@ nsCertListCount(CERTCertList *certList)
   return numCerts;
 }
 
+//Import user certificates that arrive as a CMMF base64 encoded
+//string.
 void
 nsCrypto::ImportUserCertificates(const nsAString& aNickname,
                                  const nsAString& aCmmfResponse,
@@ -2487,19 +2478,6 @@ nsCrypto::ImportUserCertificates(const nsAString& aNickname,
   }
 }
 
-//Import user certificates that arrive as a CMMF base64 encoded
-//string.
-NS_IMETHODIMP
-nsCrypto::ImportUserCertificates(const nsAString& aNickname,
-                                 const nsAString& aCmmfResponse,
-                                       bool aDoForcedBackup,
-                                       nsAString& aReturn)
-{
-  ErrorResult rv;
-  ImportUserCertificates(aNickname, aCmmfResponse, aDoForcedBackup, aReturn, rv);
-  return rv.ErrorCode();
-}
-
 void
 nsCrypto::PopChallengeResponse(const nsAString& aChallenge,
                                      nsAString& aReturn,
@@ -2508,27 +2486,10 @@ nsCrypto::PopChallengeResponse(const nsAString& aChallenge,
   aRv.Throw(NS_ERROR_NOT_IMPLEMENTED);
 }
 
-NS_IMETHODIMP
-nsCrypto::PopChallengeResponse(const nsAString& aChallenge,
-                                     nsAString& aReturn)
-{
-  ErrorResult rv;
-  PopChallengeResponse(aChallenge, aReturn, rv);
-  return rv.ErrorCode();
-}
-
 void
 nsCrypto::Random(int32_t aNumBytes, nsAString& aReturn, ErrorResult& aRv)
 {
   aRv.Throw(NS_ERROR_NOT_IMPLEMENTED);
-}
-
-NS_IMETHODIMP
-nsCrypto::Random(int32_t aNumBytes, nsAString& aReturn)
-{
-  ErrorResult rv;
-  Random(aNumBytes, aReturn, rv);
-  return rv.ErrorCode();
 }
 
 static void
@@ -2567,8 +2528,8 @@ nsCrypto::SignText(      JSContext* aContext,
                    const nsAString& aStringToSign,
                    const nsAString& aCaOption,
                    const Sequence<nsString>& aArgs,
-                         nsAString& aReturn,
-                         ErrorResult& aRv)
+                         nsAString& aReturn/*,
+                         ErrorResult& aRv*/)
 {
   // XXX This code should return error codes, but we're keeping this
   //     backwards compatible with NS4.x and so we can't throw exceptions.
@@ -2582,7 +2543,6 @@ nsCrypto::SignText(      JSContext* aContext,
       !aCaOption.EqualsLiteral("ask")) {
     NS_WARNING("caOption argument must be ask or auto");
     aReturn.Append(internalError);
-    aRv.Throw(NS_ERROR_FAILURE);
 
     return;
   }
@@ -2593,7 +2553,6 @@ nsCrypto::SignText(      JSContext* aContext,
   nsCOMPtr<nsIInterfaceRequestor> uiContext = new PipUIContext;
   if (!uiContext) {
     aReturn.Append(internalError);
-    aRv.Throw(NS_ERROR_FAILURE);
 
     return;
   }
@@ -2612,7 +2571,6 @@ nsCrypto::SignText(      JSContext* aContext,
     nsAutoArrayPtr<JSAutoByteString> caNameBytes(new JSAutoByteString[numCAs]);
     if (!caNameBytes) {
       aReturn.Append(internalError);
-      aRv.Throw(NS_ERROR_FAILURE);
       return;
     }
 
@@ -2622,13 +2580,11 @@ nsCrypto::SignText(      JSContext* aContext,
     for (i = 0; i < numCAs; ++i) {
       JSString *caName = JS_InternString(aContext, NS_ConvertUTF16toUTF8(aArgs[i]).get());
       if (MOZ_UNLIKELY(!caName)) {
-        aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
         return;
       }
       argv[i] = STRING_TO_JSVAL(caName);
       caNameBytes[i].encodeLatin1(aContext, caName);
       if (MOZ_UNLIKELY(!caNameBytes[i])) {
-        aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
         return;
       }
     }
@@ -2636,7 +2592,6 @@ nsCrypto::SignText(      JSContext* aContext,
     nsAutoArrayPtr<char*> caNames(new char*[numCAs]);
     if (!caNames) {
       aReturn.Append(internalError);
-      aRv.Throw(NS_ERROR_FAILURE);
       return;
     }
 
@@ -2654,7 +2609,6 @@ nsCrypto::SignText(      JSContext* aContext,
 
   if (!certList || CERT_LIST_EMPTY(certList)) {
     aReturn.AppendLiteral("error:noMatchingCert");
-    aRv.Throw(NS_ERROR_FAILURE);
 
     return;
   }
@@ -2663,7 +2617,6 @@ nsCrypto::SignText(      JSContext* aContext,
     do_CreateInstance(NS_FORMSIGNINGDIALOG_CONTRACTID);
   if (!fsd) {
     aReturn.Append(internalError);
-    aRv.Throw(NS_ERROR_FAILURE);
 
     return;
   }
@@ -2672,7 +2625,6 @@ nsCrypto::SignText(      JSContext* aContext,
   GetDocumentFromContext(aContext, getter_AddRefs(document));
   if (!document) {
     aReturn.Append(internalError);
-    aRv.Throw(NS_ERROR_FAILURE);
 
     return;
   }
@@ -2681,7 +2633,6 @@ nsCrypto::SignText(      JSContext* aContext,
   nsIURI* uri = document->GetDocumentURI();
   if (!uri) {
     aReturn.Append(internalError);
-    aRv.Throw(NS_ERROR_FAILURE);
 
     return;
   }
@@ -2692,7 +2643,6 @@ nsCrypto::SignText(      JSContext* aContext,
   rv = uri->GetHost(host);
   if (NS_FAILED(rv)) {
     aReturn.Append(internalError);
-    aRv.Throw(NS_ERROR_FAILURE);
 
     return;
   }
@@ -2708,7 +2658,6 @@ nsCrypto::SignText(      JSContext* aContext,
 
   if (!nicknames) {
     aReturn.Append(internalError);
-    aRv.Throw(NS_ERROR_FAILURE);
 
     return;
   }
@@ -2719,7 +2668,6 @@ nsCrypto::SignText(      JSContext* aContext,
   nsAutoArrayPtr<PRUnichar*> certNicknameList(new PRUnichar*[nicknames->numnicknames * 2]);
   if (!certNicknameList) {
     aReturn.Append(internalError);
-    aRv.Throw(NS_ERROR_FAILURE);
 
     return;
   }
@@ -2751,7 +2699,6 @@ nsCrypto::SignText(      JSContext* aContext,
 
   if (certsToUse == 0) {
     aReturn.Append(internalError);
-    aRv.Throw(NS_ERROR_FAILURE);
 
     return;
   }
@@ -2805,14 +2752,12 @@ nsCrypto::SignText(      JSContext* aContext,
 
   if (NS_FAILED(rv)) { // something went wrong inside the tryAgain loop
     aReturn.Append(internalError);
-    aRv.Throw(NS_ERROR_FAILURE);
 
     return;
   }
 
   if (canceled) {
     aReturn.AppendLiteral("error:userCancel");
-    aRv.Throw(NS_ERROR_FAILURE);
 
     return;
   }
@@ -2820,7 +2765,6 @@ nsCrypto::SignText(      JSContext* aContext,
   SECKEYPrivateKey* privKey = PK11_FindKeyByAnyCert(signingCert, uiContext);
   if (!privKey) {
     aReturn.Append(internalError);
-    aRv.Throw(NS_ERROR_FAILURE);
 
     return;
   }
@@ -2849,7 +2793,6 @@ nsCrypto::SignText(      JSContext* aContext,
                             getter_Copies(buffer));
       if (NS_FAILED(rv)) {
         aReturn.Append(internalError);
-        aRv.Throw(NS_ERROR_FAILURE);
 
         return;
       }
@@ -2862,7 +2805,6 @@ nsCrypto::SignText(      JSContext* aContext,
   HASHContext *hc = HASH_Create(HASH_AlgSHA1);
   if (!hc) {
     aReturn.Append(internalError);
-    aRv.Throw(NS_ERROR_FAILURE);
 
     return;
   }
@@ -2900,7 +2842,6 @@ nsCrypto::SignText(      JSContext* aContext,
 
   if (srv != SECSuccess) {
     aReturn.Append(internalError);
-    aRv.Throw(NS_ERROR_FAILURE);
 
     return;
   }
@@ -2916,19 +2857,11 @@ nsCrypto::SignText(      JSContext* aContext,
   }
   else {
     aReturn.Append(internalError);
-    aRv.Throw(NS_ERROR_FAILURE);
   }
 
   PORT_Free(result);
 
   return;
-}
-
-NS_IMETHODIMP
-nsCrypto::SignText(const nsAString& aStringToSign, const nsAString& aCaOption,
-                   nsAString& aReturn)
-{
-  return NS_ERROR_NOT_IMPLEMENTED;
 }
 
 void
@@ -2953,34 +2886,10 @@ nsCrypto::Logout(ErrorResult& aRv)
   }
 }
 
-//Logout out of all installed PKCS11 tokens.
-NS_IMETHODIMP
-nsCrypto::Logout()
-{
-  ErrorResult rv;
-  Logout(rv);
-  return rv.ErrorCode();
-}
-
 void
 nsCrypto::DisableRightClick(ErrorResult& aRv)
 {
   aRv.Throw(NS_ERROR_NOT_IMPLEMENTED);
-}
-
-NS_IMETHODIMP
-nsCrypto::DisableRightClick()
-{
-  ErrorResult rv;
-  DisableRightClick(rv);
-  return rv.ErrorCode();
-}
-
-NS_IMETHODIMP
-nsCrypto::GetRandomValues(const JS::Value& aData, JSContext *cx,
-                          JS::Value* _retval)
-{
-  return mozilla::dom::Crypto::GetRandomValues(aData, cx, _retval);
 }
 
 nsCRMFObject::nsCRMFObject()

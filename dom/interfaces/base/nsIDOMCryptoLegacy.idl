@@ -8,23 +8,9 @@
 interface nsIDOMCRMFObject;
 interface nsIDOMWindow;
 
-[scriptable, uuid(0011b656-a303-469b-a358-185901cd30be)]
+[scriptable, uuid(c25ecf08-3f46-4420-bee4-8505792fd63a)]
 interface nsIDOMCrypto : nsISupports
 {
   [noscript, notxpcom]void   init(in nsIDOMWindow window);
-  readonly attribute DOMString        version;
   attribute boolean         enableSmartCardEvents;
-
-  nsIDOMCRMFObject          generateCRMFRequest(/* ... */);
-  DOMString                 importUserCertificates(in DOMString nickname,
-                                                   in DOMString cmmfResponse,
-                                                   in boolean doForcedBackup);
-  DOMString                 popChallengeResponse(in DOMString challenge);
-  DOMString                 random(in long numBytes);
-  DOMString                 signText(in DOMString stringToSign,
-                                     in DOMString caOption /* ... */);
-  void                      logout();
-  void                      disableRightClick();
-
-  [implicit_jscontext] jsval getRandomValues(in jsval aData);
 };

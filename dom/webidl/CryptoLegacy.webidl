@@ -13,14 +13,18 @@ interface RandomSource {
 
 [NoInterfaceObject]
 interface CryptoLegacy {
-  [GetterThrows]
   readonly attribute DOMString version;
 
   [SetterThrows]
   attribute boolean enableSmartCardEvents;
 
   [Throws]
-  CRMFObject generateCRMFRequest(DOMString... args);
+  CRMFObject generateCRMFRequest(ByteString  reqDN,
+                                 ByteString? regToken,
+                                 ByteString? authenticator,
+                                 ByteString? eaCert,
+                                 ByteString  jsCallback,
+                                 ByteString... args);
 
   [Throws]
   DOMString importUserCertificates(DOMString nickname,
@@ -33,7 +37,6 @@ interface CryptoLegacy {
   [Throws]
   DOMString random(long numBytes);
 
-  [Throws]
   DOMString signText(DOMString stringToSign,
                      DOMString caOption,
                      DOMString... args);

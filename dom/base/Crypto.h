@@ -40,11 +40,16 @@ public:
   virtual bool EnableSmartCardEvents() = 0;
   virtual void SetEnableSmartCardEvents(bool aEnable, ErrorResult& aRv) = 0;
 
-  virtual void GetVersion(nsAString& aVersion, ErrorResult& aRv) = 0;
+  virtual void GetVersion(nsString& aVersion) = 0;
 
   virtual already_AddRefed<nsIDOMCRMFObject>
   GenerateCRMFRequest(      JSContext* aContext,
-                      const Sequence<nsString>& aArgs,
+                      const nsACString& aReqDN,
+                      const nsACString& aRegToken,
+                      const nsACString& aAuthenticator,
+                      const nsACString& aEaCert,
+                      const nsACString& aJsCallback,
+                      const Sequence<nsCString>& aArgs,
                             ErrorResult& aRv) = 0;
 
   virtual void ImportUserCertificates(const nsAString& aNickname,
@@ -63,8 +68,7 @@ public:
                         const nsAString& aStringToSign,
                         const nsAString& aCaOption,
                         const Sequence<nsString>& aArgs,
-                              nsAString& aReturn,
-                              ErrorResult& aRv) = 0;
+                              nsAString& aReturn) = 0;
 
   virtual void Logout(ErrorResult& aRv) = 0;
 
