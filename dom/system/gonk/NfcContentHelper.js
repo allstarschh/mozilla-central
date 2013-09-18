@@ -76,9 +76,9 @@ NfcContentHelper.prototype = {
       var record = records[i];
       encodedRecords.push({
         tnf: record.tnf,
-        type: btoa(record.type),
-        id: btoa(record.id),
-        payload: btoa(record.payload),
+        type: record.type,
+        id: record.id,
+        payload: record.payload,
       });
     }
     return encodedRecords;
@@ -427,9 +427,13 @@ NfcContentHelper.prototype = {
     let result = message.content;
     let requestId = atob(message.requestId);
     let records = result.records.map(function(r) {
-      r.type = atob(r.type);
-      r.id = atob(r.id);
-      r.payload = atob(r.payload);
+      let type = "";
+      for (let i = 0; i < r.type.length; i++) {
+        type += String.fromCharCode(r.type[i]);
+      }
+      r.type = type;
+//      r.id = atob(r.id);
+//      r.payload = atob(r.payload);
       return r;
     });
     let resultA = {records: records};
@@ -543,6 +547,7 @@ NfcContentHelper.prototype = {
     let requester = this._requestMap[message.requestId];
     if ((typeof requester === 'undefined') ||
         (message.sessionId != this._connectedSessionId)) {
+       debug('ConnectResponse return requester='+requester+" message.sessionId="+message.sessionId+" this._connectedSessionId="+this._connectedSessionId);
        return; // Nothing to do in this instance.
     }
     delete this._requestMap[message.requestId];

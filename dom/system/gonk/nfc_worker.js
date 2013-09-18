@@ -25,6 +25,10 @@ importScripts("resource://gre/modules/workers/require.js");
 // without us overriding that here.
 let DEBUG = true;
 
+function getPaddingLen(len) {
+  return (len % 4) ? (4 - len % 4) : 0;
+}
+
 let Buf = {
   __proto__: (function(){
     return require("resource://gre/modules/workers/worker_buf.js").Buf;
@@ -39,7 +43,7 @@ let Buf = {
    */
   processParcel: function processParcel() {
     let pduType = this.readUint32();
-    Nfc.handleParcel(pduType, this.readAvailable);
+    Nfc.handleParcel(pduType, this.mCallback, this.readAvailable);
   },
 
   /**
@@ -47,13 +51,12 @@ let Buf = {
    *
    * @param type
    *        Integer specifying the request type.
-   * @param options [optional]
-   *        Object containing information about the request, e.g. the
-   *        original main thread message object that led to the RIL request.
+   * @param callback
    */
-  newParcel: function newParcel(type, options) {
+  newParcel: function newParcel(type, callback) {
     if (DEBUG) debug("New outgoing parcel of type " + type);
 
+    this.mCallback = callback;
     // We're going to leave room for the parcel size at the beginning.
     this.outgoingIndex = this.PARCEL_SIZE_SIZE;
     this.writeUint32(type);
@@ -66,7 +69,10 @@ let Buf = {
 
   onSendParcel: function onSendParcel(parcel) {
     postNfcMessage(parcel);
-  }
+  },
+
+  //TODO maintain callback
+  mCallback: null,
 };
 
 
@@ -99,15 +105,73 @@ let Nfc = {
    * Retrieve metadata describing the NDEF formatted data, if present.
    */
   ndefDetails: function ndefDetails(message) {
-    postNfcMessage(JSON.stringify(message.content));
+    //TODO
+    debug(JSON.stringify(message.content));
   },
 
   /**
    * Read and return NDEF data, if present.
    */
   ndefRead: function ndefRead(message) {
-    Buf.newParcel(NFC_REQUEST_READ_NDEF /*, message*/);
-    //TODO sessionId
+    let cb = function callback() {
+      let erorr = Buf.readUint32();
+      let sessionId = Buf.readUint32();
+      let numOfRecords = Buf.readUint32();
+      debug("numOfRecords="+numOfRecords);
+      let records = [];
+      for (let i = 0; i < numOfRecords; i++) {
+        let tnf = Buf.readUint32();
+        debug("tnf="+tnf.toString(16));
+        let typeLength = Buf.readUint32();
+        debug("typeLength="+typeLength);
+        let type = Buf.readUint8Array(typeLength);
+        debug("type="+type);
+        let padding = getPaddingLen(typeLength);
+        debug("type padding ="+padding);
+        for (let i = 0; i < padding; i++) {
+          Buf.readUint8();
+        }
+
+        let idLength = Buf.readUint32();
+        debug("idLength="+idLength);
+        let id = Buf.readUint8Array(idLength);
+        debug("id="+id);
+        padding = getPaddingLen(idLength);
+        debug("id padding ="+padding);
+        for (let i = 0; i < padding; i++) {
+          Buf.readUint8();
+        }
+
+        let payloadLength = Buf.readUint32();
+        debug("payloadLength="+payloadLength);
+        //TODO using Uint8Array will make the payload become an object, not an array.
+        let payload = [];
+        for (let i = 0; i < payloadLength; i++) {
+          payload.push(Buf.readUint8());
+        }
+
+        padding = getPaddingLen(payloadLength);
+        debug("payload padding ="+padding);
+        for (let i = 0; i < padding; i++) {
+          Buf.readUint8();
+         }
+        debug("payload="+payload);
+
+        records.push({tnf: tnf,
+                      type: type,
+                      id: id,
+                      payload: payload});
+      }
+
+      message.requestId = message.content.requestId;
+      message.sessionId = sessionId;
+      message.content.records = records;
+      message.type = "NDEFReadResponse";
+      this.sendDOMMessage(message);
+    }
+
+    Buf.newParcel(NFC_REQUEST_READ_NDEF, cb);
+    Buf.writeUint32(message.content.requestId);
     Buf.sendParcel();
   },
 
@@ -115,8 +179,21 @@ let Nfc = {
    * Write to a target that accepts NDEF formattable data
    */
   ndefWrite: function ndefWrite(message) {
+    let cb = function callback() {
+      debug("ndefWrite callback");
+      message.content.status = "OK";
+      message.type = "NDEFWriteResponse";
+      let error = Buf.readUint32();
+      let sessionId = Buf.readUint32();
+      message.requestId = message.content.requestId;
+      message.sessionId = sessionId;
+      this.sendDOMMessage(message);
+    };
+
     debug("ndefWrite message="+JSON.stringify(message));
-    Buf.newParcel(NFC_REQUEST_WRITE_NDEF/*, message*/);
+    Buf.newParcel(NFC_REQUEST_WRITE_NDEF, cb);
+    Buf.writeUint32(message.content.requestId);
+
     let records = message.content.content.records;
     let numRecords = records.length;
     debug("ndefWrite numRecords="+numRecords);
@@ -133,7 +210,12 @@ let Nfc = {
       for (let j = 0; j < typeLength; j++) {
         debug("type ["+j+"]=  "+record.type[j]);
         debug("type ["+j+"]=  "+record.type.charCodeAt(j));
-        Buf.writeUint32(record.type.charCodeAt(j));
+        Buf.writeUint8(record.type.charCodeAt(j));
+      }
+      let padding = getPaddingLen(typeLength);
+      debug("type padding ="+padding);
+      for (let i = 0; i < padding; i++) {
+        Buf.writeUint8(0x00);
       }
 
       let idLength = record.id.length;
@@ -142,7 +224,12 @@ let Nfc = {
       for (let j = 0; j < idLength; j++) {
         debug("id ["+j+"]=  "+record.id[j]);
         debug("id ["+j+"]=  "+record.id.charCodeAt(j));
-        Buf.writeUint32(record.id.charCodeAt(j));
+        Buf.writeUint8(record.id.charCodeAt(j));
+      }
+      padding = getPaddingLen(idLength);
+      debug("id padding ="+padding);
+      for (let i = 0; i < padding; i++) {
+        Buf.writeUint8(0x00);
       }
 
       let payloadLength = record.payload && record.payload.length;
@@ -151,8 +238,14 @@ let Nfc = {
       for (let j = 0; j < payloadLength; j++) {
         debug("payload ["+j+"]=  "+record.payload[j]);
         debug("payload ["+j+"]=  "+record.payload.charCodeAt(j));
-        Buf.writeUint32(record.payload.charCodeAt(j));
+        Buf.writeUint8(record.payload.charCodeAt(j));
       }
+      padding = getPaddingLen(payloadLength);
+      debug("payload padding ="+padding);
+      for (let i = 0; i < padding; i++) {
+        Buf.writeUint8(0x00);
+      }
+
     }
 
     Buf.sendParcel();
@@ -162,6 +255,7 @@ let Nfc = {
    * Make the NFC NDEF tag permenantly read only
    */
   ndefMakeReadOnly: function ndefMakeReadOnly(message) {
+    //TODO
 //    postNfcMessage(JSON.stringify(message.content));
   },
 
@@ -169,6 +263,7 @@ let Nfc = {
    * P2P NDEF message push between a pair of NFC devices.
    */
   ndefPush: function ndefPush(message) {
+    //TODO
 //    postNfcMessage(JSON.stringify(message.content));
   },
 
@@ -176,6 +271,7 @@ let Nfc = {
    * Retrieve metadata describing the NfcA tag type, if present.
    */
   nfcATagDetails: function nfcATagDetails(message) {
+    //TODO
 //    postNfcMessage(JSON.stringify(message.requestId)); // Just request ID.
   },
 
@@ -183,6 +279,7 @@ let Nfc = {
    *  Excahnge PDUs with the NFC target. Request ID is required.
    */
   nfcATagTransceive: function nfcATagTransceive(message) {
+    //TODO
 //    postNfcMessage(JSON.stringify(message.content));
   },
 
@@ -191,16 +288,27 @@ let Nfc = {
    */
   connect: function connect(message) {
     debug("connect message="+JSON.stringify(message));
-    Buf.newParcel(NFC_REQUEST_CONNECT, message);
+    let cb = function callback() {
+      debug("connect callback");
+      message.content.status = "OK";
+      message.type = "ConnectResponse";
+      let error = Buf.readUint32();
+      let sessionId = Buf.readUint32();
+      message.requestId = message.content.requestId;
+      message.sessionId = sessionId;
+      this.sendDOMMessage(message);
+    };
+    Buf.newParcel(NFC_REQUEST_CONNECT, cb);
+    Buf.writeUint32(message.content.requestId);
     Buf.writeUint32(message.content.techType);
     Buf.sendParcel();
-//    postNfcMessage(JSON.stringify(message.content));
   },
 
   /**
    * NFC Configuration
    */
   configRequest: function configRequest(message) {
+    //TODO
     debug("config:"+JSON.stringify(message.content));
   },
 
@@ -208,15 +316,28 @@ let Nfc = {
    * Close connection to the NFC target. Request ID is required.
    */
   close: function close(message) {
-    Buf.newParcel(2, message);
+    let cb = function callback() {
+      message.content.status = "OK";
+      message.type = "CloseResponse";
+      let error = Buf.readUint32();
+      let sessionId = Buf.readUint32();
+      message.requestId = message.content.requestId;
+      message.sessionId = sessionId;
+      this.sendDOMMessage(message);
+    };
+
+    Buf.newParcel(NFC_REQUEST_CLOSE , cb);
+    Buf.writeUint32(message.content.requestId);
     Buf.sendParcel();
   },
 
-  handleParcel: function handleParcel(request_type, length) {
+  handleParcel: function handleParcel(request_type, callback, length) {
     let method = this[request_type];
     if (typeof method == "function") {
       if (DEBUG) debug("Handling parcel as " + method.name);
       method.call(this, length);
+    } else {
+      callback.call(this, length);
     }
   },
 
@@ -226,65 +347,6 @@ let Nfc = {
   sendDOMMessage: function sendDOMMessage(message) {
     postMessage(message);
   }
-};
-Nfc[NFC_REQUEST_CONNECT] = function NFC_REQUEST_CONNECT(length, options) {
-  debug("NFC_CONNECT_REQUEST options="+JSON.stringify(options));
-  options.requestId = options.content.requestId;
-  options.sessionId = "12345";
-  options.content.status = "OK";
-  //TODO
-  options.type = "ConnectResponse";
-  this.sendDOMMessage(options);
-};
-Nfc[NFC_REQUEST_READ_NDEF] = function NFC_REQUEST_READ_NDEF(length, options) {
-  debug("NFC_READ_NDEF_REQUEST options="+JSON.stringify(options));
-  let numOfRecords = Buf.readUint32();
-  debug("numOfRecords="+numOfRecords);
-  let records = [];
-  for (let i = 0; i < numOfRecords; i++) {
-//    let tnf = Buf.readUint8();
-    let tnf = Buf.readUint32();
-    debug("tnf="+tnf.toString(16));
-    let typeLength = Buf.readUint32();
-    debug("typeLength="+typeLength);
-//    let type = Buf.readUint8Array(typeLength);
-    let type = [];
-    for (let i = 0; i < typeLength; i++) {
-        type.push(Buf.readUint32());
-    }
-//    let type = Buf.readUint32Array(typeLength);
-    debug("type="+type);
-
-//    let idLength = Buf.readUint8();
-    let idLength = Buf.readUint32();
-    debug("idLength="+idLength);
-//    let id = Buf.readUint8Array(idLength);
-    let id = [];
-    for (let i = 0; i < idLength; i++) {
-        id.push(Buf.readUint32());
-    }
-    debug("id="+id);
-
-    let payloadLength = Buf.readUint32();
-    debug("payloadLength="+payloadLength);
-    let payload = [];
-    for (let i = 0; i < payloadLength; i++) {
-        payload.push(Buf.readUint32());
-    }
-
-    debug("payload="+payload);
-
-    records.push({tnf: tnf,
-                  type: type,
-                  id: id,
-                  payload: payload});
-  }
-
-  options.requestId = options.content.requestId;
-  options.sessionId = "12345";
-  options.content.records = records;
-  options.type = "NDEFReadResponse";
-  this.sendDOMMessage(options);
 };
 
 Nfc[NFC_NOTIFICATION_INITIALIZED] = function NFC_NOTIFICATION_INITIALIZED (length) {
@@ -307,6 +369,14 @@ Nfc[NFC_NOTIFICATION_TECH_DISCOVERED] = function NFC_NOTIFICATION_TECH_DISCOVERE
   this.sendDOMMessage({type: "techDiscovered",
                        sessionId: sessionId,
                        content: { tech: techs}
+                       });
+};
+Nfc[NFC_NOTIFICATION_TECH_LOST] = function NFC_NOTIFICATION_TECH_LOST(length) {
+  debug("NFC_NOTIFICATION_TECH_LOST");
+  let sessionId = Buf.readUint32();
+  debug("sessionId="+sessionId);
+  this.sendDOMMessage({type: "techLost",
+                       sessionId: sessionId,
                        });
 };
 
